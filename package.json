@@ -1,5 +1,6 @@
 {
   "name": "@iliad/stream-ui",
+  "private": true,
   "version": "0.0.0-development",
   "description": "React components to create chat conversations or livestream style chat",
   "author": "GetStream",
@@ -141,8 +142,8 @@
     "@emoji-mart/data": "^1.1.0",
     "@emoji-mart/react": "^1.1.0",
     "emoji-mart": "^5.4.0",
-    "react": "^19.0.0 || ^18.0.0 || ^17.0.0 || ^16.14.0",
-    "react-dom": "^19.0.0 || ^18.0.0 || ^17.0.0 || ^16.14.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "stream-chat": "^9.6.0"
   },
   "peerDependenciesMeta": {
@@ -277,6 +278,5 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72",
-  "private": "true"
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }
