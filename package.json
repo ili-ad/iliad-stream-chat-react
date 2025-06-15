@@ -235,8 +235,6 @@
     "lint-staged": "^15.2.1",
     "moment-timezone": "^0.5.43",
     "prettier": "^3.5.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "semantic-release": "^24.2.3",
     "stream-chat": "^9.6.0",
     "ts-jest": "^29.2.5",
