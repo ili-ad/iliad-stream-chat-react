@@ -1,10 +1,12 @@
 import React from 'react';
 
-import type { ThreadManagerState } from 'stream-chat';
+import type { ThreadManagerState } from 'chat-shim';
 
 import { Icon } from '../icons';
 import { useChatContext } from '../../../context';
 import { useStateStore } from '../../../store';
+import { chatAPI } from '../../../api/chatAPI';
+import { clientThreadsState } from '../../../chatSDKShim';
 
 const selector = (nextValue: ThreadManagerState) => ({
   unseenThreadIds: nextValue.unseenThreadIds,
@@ -12,7 +14,10 @@ const selector = (nextValue: ThreadManagerState) => ({
 
 export const ThreadListUnseenThreadsBanner = () => {
   const { client } = useChatContext();
-  const { unseenThreadIds } = useStateStore(client.threads.state, selector);
+  const { unseenThreadIds } = useStateStore(
+    clientThreadsState(client),
+    selector,
+  );
 
   if (!unseenThreadIds.length) return null;
 
@@ -22,7 +27,9 @@ export const ThreadListUnseenThreadsBanner = () => {
       {unseenThreadIds.length} unread threads
       <button
         className='str-chat__unseen-threads-banner__button'
-        onClick={() => client.threads.reload()}
+        onClick={() => {
+          void chatAPI.clientThreadsReload({ client });
+        }}
       >
         <Icon.Reload />
       </button>

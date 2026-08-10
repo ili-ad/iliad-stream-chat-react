@@ -4,7 +4,7 @@ import { Avatar as DefaultAvatar } from '../Avatar';
 import { useTranslationContext } from '../../context/TranslationContext';
 import { getDateString } from '../../i18n/utils';
 
-import type { Event, LocalMessage } from 'stream-chat';
+import type { Event, LocalMessage } from 'chat-shim';
 import type { AvatarProps } from '../Avatar';
 import type { TimestampFormatterOptions } from '../../i18n/types';
 

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import type { SearchControllerState } from 'stream-chat';
+import type { SearchControllerState } from 'chat-shim';
 
 import { SearchBar as DefaultSearchBar } from './SearchBar/SearchBar';
 import { SearchResults as DefaultSearchResults } from './SearchResults/SearchResults';

@@ -3,7 +3,7 @@ import {
   attachmentUploadFailedNotificationTranslator,
 } from './attachmentUpload';
 import { TranslationTopic } from '../../TranslationBuilder';
-import type { Notification } from 'stream-chat';
+import type { Notification } from 'chat-shim';
 import type { NotificationTranslatorOptions } from './types';
 import type { TranslationTopicOptions, Translator } from '../../index';
 import { pollCreationFailedNotificationTranslator } from './pollComposition';

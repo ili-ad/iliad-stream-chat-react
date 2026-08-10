@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { SearchController, SearchControllerState, SearchSource } from 'stream-chat';
+import type { SearchController, SearchControllerState, SearchSource } from 'chat-shim';
 
 import { useStateStore } from '../../../store';
 

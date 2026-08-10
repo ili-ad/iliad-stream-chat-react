@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
 import clsx from 'clsx';
-import type { TranslationLanguages } from 'stream-chat';
+import type { TranslationLanguages } from 'chat-shim';
 
 import { Attachment as DefaultAttachment } from '../Attachment';
 import { Avatar as DefaultAvatar } from '../Avatar';
 import { Poll } from '../Poll';
+import { chatAPI } from '../../api/chatAPI';
 import { useChatContext } from '../../context/ChatContext';
 import { useComponentContext } from '../../context/ComponentContext';
 import { useMessageContext } from '../../context/MessageContext';
@@ -33,7 +34,13 @@ export const QuotedMessage = ({ renderText: propsRenderText }: QuotedMessageProp
 
   const { quoted_message } = message;
 
-  const poll = quoted_message?.poll_id && client.polls.fromState(quoted_message.poll_id);
+  const poll = quoted_message?.poll_id
+    ? chatAPI.polls_fromState({
+        client,
+        pollId: quoted_message.poll_id,
+        sources: [quoted_message],
+      })
+    : undefined;
   const quotedMessageDeleted =
     quoted_message?.deleted_at || quoted_message?.type === 'deleted';
 

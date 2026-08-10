@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { Channel } from 'stream-chat';
+import type { Channel } from 'chat-shim';
 
 import { getDisplayImage, getDisplayTitle, getGroupChannelDisplayInfo } from '../utils';
 import { useChatContext } from '../../../context';
+import { chatAPI } from '../../../api/chatAPI';
 
 export type ChannelPreviewInfoParams = {
   channel: Channel;
@@ -40,9 +41,10 @@ export const useChannelPreviewInfo = (props: ChannelPreviewInfoParams) => {
 
     updateInfo();
 
-    client.on('user.updated', updateInfo);
+    const subscription = chatAPI.client.on(client, 'user.updated', updateInfo);
+
     return () => {
-      client.off('user.updated', updateInfo);
+      subscription.unsubscribe();
     };
   }, [channel, channel.data, client, overrideImage, overrideTitle]);
 

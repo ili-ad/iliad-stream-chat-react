@@ -4,8 +4,9 @@ import uniqBy from 'lodash.uniqby';
 import { moveChannelUp } from '../utils';
 
 import { useChatContext } from '../../../context/ChatContext';
+import { chatAPI } from '../../../api/chatAPI';
 
-import type { Channel, Event } from 'stream-chat';
+import type { Channel, Event } from 'chat-shim';
 
 export const useMessageNewListener = (
   setChannels: React.Dispatch<React.SetStateAction<Array<Channel>>>,
@@ -32,7 +33,10 @@ export const useMessageNewListener = (
             allowNewMessagesFromUnfilteredChannels &&
             event.channel_type
           ) {
-            const channel = client.channel(event.channel_type, event.channel_id);
+            const channel = client.channel(
+              event.channel_type,
+              event.channel_id,
+            ) as any;
             return uniqBy([channel, ...channels], 'cid');
           }
 
@@ -43,10 +47,10 @@ export const useMessageNewListener = (
       }
     };
 
-    client.on('message.new', handleEvent);
+    const subscription = chatAPI.client.on(client, 'message.new', handleEvent);
 
     return () => {
-      client.off('message.new', handleEvent);
+      subscription.unsubscribe();
     };
   }, [
     allowNewMessagesFromUnfilteredChannels,

@@ -4,6 +4,7 @@ import { CloseIcon } from './icons';
 import { Attachment as DefaultAttachment } from '../Attachment';
 import { Avatar as DefaultAvatar } from '../Avatar';
 import { Poll } from '../Poll';
+import { chatAPI } from '../../api/chatAPI';
 
 import { useChatContext } from '../../context/ChatContext';
 import { useComponentContext } from '../../context/ComponentContext';
@@ -12,20 +13,49 @@ import { useTranslationContext } from '../../context/TranslationContext';
 import { useStateStore } from '../../store';
 import { useMessageComposer } from './hooks';
 import { renderText as defaultRenderText } from '../Message/renderText';
-import type { MessageComposerState, TranslationLanguages } from 'stream-chat';
+import type { MessageComposerState, TranslationLanguages } from 'chat-shim';
 import type { MessageContextValue } from '../../context';
 
 const messageComposerStateStoreSelector = (state: MessageComposerState) => ({
   quotedMessage: state.quotedMessage,
 });
 
+// export const QuotedMessagePreviewHeader = () => {
+//   const { t } = useTranslationContext('QuotedMessagePreview');
+//   const messageComposer = useMessageComposer();
+//   const { quotedMessage } = useStateStore(
+//     messageComposer.state,
+//     messageComposerStateStoreSelector,
+//   );
+
+//   if (!quotedMessage) return null;
+
+//   return (
+//     <div className='str-chat__quoted-message-preview-header'>
+//       <div className='str-chat__quoted-message-reply-to-message'>
+//         {t('Reply to Message')}
+//       </div>
+//       <button
+//         aria-label={t('aria/Cancel Reply')}
+//         className='str-chat__quoted-message-remove'
+//         onClick={() => messageComposer.setQuotedMessage(null)}
+//       >
+//         <CloseIcon />
+//       </button>
+//     </div>
+//   );
+// };
+
 export const QuotedMessagePreviewHeader = () => {
-  const { t } = useTranslationContext('QuotedMessagePreview');
-  const messageComposer = useMessageComposer();
-  const { quotedMessage } = useStateStore(
-    messageComposer.state,
-    messageComposerStateStoreSelector,
-  );
+  const { t }          = useTranslationContext('QuotedMessagePreview');
+  const composer       = useMessageComposer();
+
+  /* safe read ----------------------------------------------------------- */
+  let quotedMessage: MessageComposerState['quotedMessage'] | undefined;
+  if (composer.state?.getLatestValue) {
+    const snap = useStateStore(composer.state, messageComposerStateStoreSelector);
+    quotedMessage = snap?.quotedMessage;
+  }
 
   if (!quotedMessage) return null;
 
@@ -37,7 +67,7 @@ export const QuotedMessagePreviewHeader = () => {
       <button
         aria-label={t('aria/Cancel Reply')}
         className='str-chat__quoted-message-remove'
-        onClick={() => messageComposer.setQuotedMessage(null)}
+        onClick={() => composer.setQuotedMessage(null)}
       >
         <CloseIcon />
       </button>
@@ -45,9 +75,30 @@ export const QuotedMessagePreviewHeader = () => {
   );
 };
 
-export type QuotedMessagePreviewProps = {
-  renderText?: MessageContextValue['renderText'];
-};
+
+// export type QuotedMessagePreviewProps = {
+//   renderText?: MessageContextValue['renderText'];
+// };
+
+// export const QuotedMessagePreview = ({
+//   renderText = defaultRenderText,
+// }: QuotedMessagePreviewProps) => {
+//   const { client } = useChatContext();
+//   const { Attachment = DefaultAttachment, Avatar = DefaultAvatar } =
+//     useComponentContext('QuotedMessagePreview');
+//   const { userLanguage } = useTranslationContext('QuotedMessagePreview');
+//   const messageComposer = useMessageComposer();
+//   const { quotedMessage } = useStateStore(
+//     messageComposer.state,
+//     messageComposerStateStoreSelector,
+//   );
+
+//   const quotedMessageText = useMemo(
+//     () =>
+//       quotedMessage?.i18n?.[`${userLanguage}_text` as `${TranslationLanguages}_text`] ||
+//       quotedMessage?.text,
+//     [quotedMessage?.i18n, quotedMessage?.text, userLanguage],
+//   );
 
 export const QuotedMessagePreview = ({
   renderText = defaultRenderText,
@@ -56,12 +107,16 @@ export const QuotedMessagePreview = ({
   const { Attachment = DefaultAttachment, Avatar = DefaultAvatar } =
     useComponentContext('QuotedMessagePreview');
   const { userLanguage } = useTranslationContext('QuotedMessagePreview');
-  const messageComposer = useMessageComposer();
-  const { quotedMessage } = useStateStore(
-    messageComposer.state,
-    messageComposerStateStoreSelector,
-  );
+  const composer = useMessageComposer();
 
+  /* safe read ----------------------------------------------------------- */
+  let quotedMessage: MessageComposerState['quotedMessage'] | undefined;
+  if (composer.state?.getLatestValue) {
+    const snap = useStateStore(composer.state, messageComposerStateStoreSelector);
+    quotedMessage = snap?.quotedMessage;
+  }
+
+  /* -------------------------------------------------------------------- */
   const quotedMessageText = useMemo(
     () =>
       quotedMessage?.i18n?.[`${userLanguage}_text` as `${TranslationLanguages}_text`] ||
@@ -80,7 +135,13 @@ export const QuotedMessagePreview = ({
     [quotedMessage],
   );
 
-  const poll = quotedMessage?.poll_id && client.polls.fromState(quotedMessage.poll_id);
+  const poll = quotedMessage?.poll_id
+    ? chatAPI.polls_fromState({
+        client,
+        pollId: quotedMessage.poll_id,
+        sources: [quotedMessage],
+      })
+    : undefined;
 
   if (!quotedMessageText && !quotedMessageAttachments.length && !poll) return null;
 

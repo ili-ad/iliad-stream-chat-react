@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 
 import { useChatContext } from '../../../context/ChatContext';
+import { chatAPI } from '../../../api/chatAPI';
 
-import type { Channel, Event } from 'stream-chat';
+import type { Channel, Event } from 'chat-shim';
 
 export const useChannelUpdatedListener = (
   setChannels: React.Dispatch<React.SetStateAction<Array<Channel>>>,
@@ -44,10 +45,14 @@ export const useChannelUpdatedListener = (
       }
     };
 
-    client.on('channel.updated', handleEvent);
+    const subscription = chatAPI.client.on(
+      client,
+      'channel.updated',
+      handleEvent,
+    );
 
     return () => {
-      client.off('channel.updated', handleEvent);
+      subscription.unsubscribe();
     };
   }, [client, customHandler, forceUpdate, setChannels]);
 };

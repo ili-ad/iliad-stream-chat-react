@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ChannelSort } from 'stream-chat';
+import type { ChannelSort } from 'chat-shim';
 
 import {
   Channel,
@@ -23,15 +23,12 @@ const Controls = () => {
 
   return (
     <div>
-      <button data-testid='truncate' onClick={() => channel.truncate()}>
+      <button data-testid='truncate' onClick={() => /* TODO backend-wire-up: truncate */}>
         Truncate
       </button>
       <button
         data-testid='add-message'
         onClick={() =>
-          channel.sendMessage({
-            text: 'Hello world!',
-          })
         }
       >
         Add message

@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useState } from 'react';
-import type { APIErrorResponse, ErrorFromResponse } from 'stream-chat';
+import type { APIErrorResponse, ErrorFromResponse } from 'chat-shim';
 
 type ChannelQueryState =
   | 'uninitialized' // the initial state before the first channels query is triggered

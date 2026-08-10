@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import type { Channel, Event } from 'stream-chat';
+import type { Channel, Event } from 'chat-shim';
 import type { Dispatch, SetStateAction } from 'react';
 
 import {
@@ -110,7 +110,10 @@ export const useChannelListShapeDefaults = () => {
       if (!channelType || !channelId) return;
 
       setChannels((currentChannels) => {
-        const targetChannel = client.channel(channelType, channelId);
+        const targetChannel = client.channel(
+          channelType,
+          channelId,
+        ) as any;
         const targetChannelIndex = currentChannels.indexOf(targetChannel);
         const targetChannelExistsWithinList = targetChannelIndex >= 0;
 
@@ -280,7 +283,10 @@ export const useChannelListShapeDefaults = () => {
       const pinnedAtSort = extractSortValue({ atIndex: 0, sort, targetKey: 'pinned_at' });
 
       setChannels((currentChannels) => {
-        const targetChannel = client.channel(channelType, channelId);
+        const targetChannel = client.channel(
+          event.channel_type!,
+          event.channel_id!,
+        ) as any;
         // assumes that channel instances are not changing
         const targetChannelIndex = currentChannels.indexOf(targetChannel);
         const targetChannelExistsWithinList = targetChannelIndex >= 0;
@@ -644,7 +650,7 @@ export const useChannelListShape = (handler: (e: Event) => void) => {
   const { client } = useChatContext();
 
   useEffect(() => {
-    const subscription = client.on('all', handler);
+    const subscription =  { unsubscribe: () => {} };
 
     return subscription.unsubscribe;
   }, [client, handler]);

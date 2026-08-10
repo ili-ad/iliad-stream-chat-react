@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
-import type { Event } from 'stream-chat';
+import type { Event } from 'chat-shim';
 
 import { CustomNotification } from './CustomNotification';
 import { useChatContext, useTranslationContext } from '../../context';
+import { chatAPI } from '../../api/chatAPI';
 
 const UnMemoizedConnectionStatus = () => {
   const { client } = useChatContext('ConnectionStatus');
@@ -18,8 +19,15 @@ const UnMemoizedConnectionStatus = () => {
       }
     };
 
-    client.on('connection.changed', connectionChanged);
-    return () => client.off('connection.changed', connectionChanged);
+    const subscription = chatAPI.client.on(
+      client,
+      'connection.changed',
+      connectionChanged,
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [client, online]);
 
   return (

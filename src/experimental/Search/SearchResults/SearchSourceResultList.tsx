@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ComponentType } from 'react';
-import type { SearchSourceState, SearchSourceType } from 'stream-chat';
+import type { SearchSourceState, SearchSourceType } from 'chat-shim';
 
 import { DefaultSearchResultItems } from './SearchResultItem';
 import { SearchSourceResultListFooter as DefaultSearchSourceResultListFooter } from './SearchSourceResultListFooter';

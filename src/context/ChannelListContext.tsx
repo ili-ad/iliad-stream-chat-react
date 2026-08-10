@@ -1,7 +1,7 @@
 import type { Dispatch, PropsWithChildren, SetStateAction } from 'react';
 import React, { createContext, useContext } from 'react';
 
-import type { Channel } from 'stream-chat';
+import type { Channel } from 'chat-shim';
 
 export type ChannelListContextValue = {
   /**

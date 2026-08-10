@@ -6,14 +6,14 @@ import type {
   TextComposerMiddlewareExecutorState,
   TextComposerMiddlewareOptions,
   TextComposerSuggestion,
-} from 'stream-chat';
+} from 'chat-shim';
 import {
   BaseSearchSource,
   getTokenizedSuggestionDisplayName,
   getTriggerCharWithToken,
   insertItemWithTrigger,
   replaceWordWithEntity,
-} from 'stream-chat';
+} from 'chat-shim';
 import type {
   EmojiSearchIndex,
   EmojiSearchIndexResult,

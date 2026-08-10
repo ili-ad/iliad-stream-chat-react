@@ -22,7 +22,7 @@ import {
 } from '../../../context';
 import { useStateStore } from '../../../store';
 
-import type { PollAnswer, PollOption, PollState } from 'stream-chat';
+import type { PollAnswer, PollOption, PollState } from 'chat-shim';
 
 type ModalName =
   | 'suggest-option'

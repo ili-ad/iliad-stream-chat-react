@@ -1,16 +1,18 @@
 import clsx from 'clsx';
 import debounce from 'lodash.debounce';
 import React, { useMemo } from 'react';
-import { isVoteAnswer } from 'stream-chat';
+import { isVoteAnswer } from 'chat-shim';
 import { Avatar } from '../Avatar';
 import {
   useChannelStateContext,
+  useChatContext,
   useMessageContext,
   usePollContext,
   useTranslationContext,
 } from '../../context';
 import { useStateStore } from '../../store';
-import type { PollOption, PollState, PollVote, VotingVisibility } from 'stream-chat';
+import { castVote } from '../../chatSDKShim';
+import type { PollOption, PollState, PollVote, VotingVisibility } from 'chat-shim';
 
 type AmountBarProps = {
   amount: number;
@@ -69,6 +71,7 @@ export const PollOptionSelector = ({
   const { t } = useTranslationContext();
   const { channelCapabilities = {} } = useChannelStateContext('PollOptionsShortlist');
   const { message } = useMessageContext();
+  const { client } = useChatContext('PollOptionSelector');
 
   const { poll } = usePollContext();
   const {
@@ -90,10 +93,23 @@ export const PollOptionSelector = ({
         if (!canCastVote) return;
         const haveVotedForTheOption = !!ownVotesByOptionId[option.id];
         return haveVotedForTheOption
-          ? poll.removeVote(ownVotesByOptionId[option.id].id, message.id)
-          : poll.castVote(option.id, message.id);
+          ? Promise.resolve()
+          : castVote({
+              poll,
+              optionId: option.id,
+              messageId: message.id,
+              userId: client.user?.id ?? 'me',
+              user: client.user,
+            });
       }, 100),
-    [canCastVote, message.id, option.id, ownVotesByOptionId, poll],
+    [
+      canCastVote,
+      client.user,
+      message.id,
+      option.id,
+      ownVotesByOptionId,
+      poll,
+    ],
   );
 
   return (

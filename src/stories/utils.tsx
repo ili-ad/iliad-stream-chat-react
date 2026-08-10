@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StreamChat } from 'stream-chat';
+import type { StreamChat } from 'chat-shim';
 import type { PropsWithChildren } from 'react';
-import type { OwnUserResponse, TokenOrProvider, UserResponse } from 'stream-chat';
+import type { OwnUserResponse, TokenOrProvider, UserResponse } from 'chat-shim';
 
 import { Chat } from '../';
 
@@ -28,21 +28,32 @@ const useClient = ({
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
 
   useEffect(() => {
-    const client = new StreamChat(apiKey);
-
     let didUserConnectInterrupt = false;
-    const connectionPromise = client.connectUser(userData, tokenOrProvider).then(() => {
-      if (!didUserConnectInterrupt) setChatClient(client);
+
+    const connectPromise = (async () => {
+      /* TODO backend-wire-up:connectUser */
+      void apiKey;
+      void tokenOrProvider;
+      void userData;
+      return {} as StreamChat;
+    })();
+
+    connectPromise.then((connectedClient) => {
+      if (!didUserConnectInterrupt) {
+        setChatClient(connectedClient);
+      }
     });
 
     return () => {
       didUserConnectInterrupt = true;
       setChatClient(null);
-      connectionPromise
-        .then(() => client.disconnectUser())
-        .then(() => {
-          console.log('connection closed');
-        });
+      void connectPromise.then(() => {
+        /* TODO backend-wire-up:disconnectUser */
+        void apiKey;
+        void tokenOrProvider;
+        void userData;
+        console.log('connection closed');
+      });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiKey, userData.id, tokenOrProvider]);

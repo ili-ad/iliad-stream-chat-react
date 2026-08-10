@@ -2,6 +2,7 @@ import debounce from 'lodash.debounce';
 import clsx from 'clsx';
 import type {
   ChangeEventHandler,
+  FocusEventHandler,
   SyntheticEvent,
   TextareaHTMLAttributes,
   UIEventHandler,
@@ -14,11 +15,12 @@ import type {
   MessageComposerConfig,
   SearchSourceState,
   TextComposerState,
-} from 'stream-chat';
+} from 'chat-shim';
 import {
   useComponentContext,
   useMessageInputContext,
   useTranslationContext,
+  useChatContext,
 } from '../../context';
 import { useStateStore } from '../../store';
 import { SuggestionList as DefaultSuggestionList } from './SuggestionList';
@@ -94,11 +96,145 @@ export const TextareaComposer = ({
   const shouldSubmit = shouldSubmitProp ?? shouldSubmitContext ?? defaultShouldSubmit;
 
   const messageComposer = useMessageComposer();
+  const { channel } = useChatContext('TextareaComposer');
+  // const { textComposer } = messageComposer;
+ /* ----------------------------------------------------------
+     If the shim never created a TextComposer, seed a stub now
+  ---------------------------------------------------------- */
+  if (!messageComposer.textComposer) {
+    // const dummyStore = {
+    //   getLatestValue: () => ({
+    //     selection: { start: 0, end: 0 },
+    //     suggestions: null,
+    //     text: '',
+    //   }),
+    //   subscribeWithSelector: (_sel: any, _cb: () => void) => () => {},
+    // };
+
+
+    /* one immutable snapshot, always the same reference */
+    const frozenSnapshot = Object.freeze({
+      selection: { start: 0, end: 0 },
+      suggestions: null,
+      text: '',
+    });
+
+    const dummyStore = {
+      /* 👇 return the *same* object every time */
+      getLatestValue: () => frozenSnapshot,
+
+      /* minimal subscribe impl – call cb once so selectors run, then noop */
+      subscribeWithSelector: (
+        selector: (s: typeof frozenSnapshot) => unknown,
+        onChange: () => void,
+      ) => {
+        // run the selector immediately (mirrors real store behaviour)
+        try {
+          selector(frozenSnapshot);
+        } catch {
+          /* ignore */
+        }
+        /* never changes, so just return an unsubscribe noop */
+        return () => {};
+      },
+    };
+
+    // minimal set of no-op methods the UI calls
+    messageComposer.textComposer = {
+      state: dummyStore,
+      handleChange: () => {},
+      setSelection: () => {},
+      closeSuggestions: () => {},
+      handleSelect: () => {},
+      suggestions: null,
+    } as any;
+  }
+
+  /* ───────── ensure a TextComposer object exists at all ───────── */
+  if (!messageComposer.textComposer) {
+    /* single frozen snapshot keeps React happy */
+    const frozenSnapshot = Object.freeze({
+      selection: { start: 0, end: 0 },
+      suggestions: null,
+      text: '',
+    });
+
+    /* minimal Zustand-like store */
+    const dummyStore = {
+      getLatestValue: () => frozenSnapshot,
+      subscribeWithSelector: (_s: any, _cb: () => void) => () => {},
+    };
+
+    /* attach a complete, no-op TextComposer */
+    // @ts-ignore – runtime patch inside the shim only
+    messageComposer.textComposer = {
+      state: dummyStore,
+      /* the UI calls these occasionally → make them no-ops */
+      handleChange: () => {},
+      setSelection: () => {},
+      closeSuggestions: () => {},
+      handleSelect: () => {},
+      suggestions: null,
+    };
+  }
+
   const { textComposer } = messageComposer;
-  const { selection, suggestions, text } = useStateStore(
-    textComposer.state,
-    textComposerStateSelector,
-  );
+
+  /* ── normalize textComposer: ensure closeSuggestions exists ── */
+  if (textComposer && typeof textComposer.closeSuggestions !== 'function') {
+    // @ts-ignore – we’re patching the runtime shim object
+    textComposer.closeSuggestions = () => {};
+  }
+
+  /* ── if it exists but still lacks a store, seed it (rare) ── */
+  if (!textComposer.state?.getLatestValue) {
+    const frozenSnapshot = Object.freeze({
+      selection: { start: 0, end: 0 },
+      suggestions: null,
+      text: '',
+    });
+    // @ts-ignore
+    textComposer.state = {
+      getLatestValue: () => frozenSnapshot,
+      subscribeWithSelector: (_s: any, _cb: () => void) => () => {},
+    };
+    // minimal reactive store compatible with useStateStore()
+    const dummyStore = {
+      getLatestValue: () => ({
+        selection: { start: 0, end: 0 },
+        suggestions: null,
+        text: '',
+      }),
+      subscribeWithSelector: (_selector: any, _on: () => void) => () => {},
+    };
+    // @ts-ignore – mutate at runtime, only in dev shim
+    textComposer.state = dummyStore;
+  }  
+
+  // const { selection, suggestions, text } = useStateStore(
+  //   textComposer.state,
+  //   textComposerStateSelector,
+  // );
+
+ /* -----------------------------------------------------------------
+     The store may return `undefined` on the very first call until the
+     shim’s dummy store / real store pushes its first snapshot.
+     Fall back to an inert snapshot so `selection.start` is always safe.
+  ------------------------------------------------------------------ */
+  const tcSnapshot =
+    useStateStore(textComposer.state, textComposerStateSelector) ?? {
+      selection: { start: 0, end: 0 },
+      suggestions: null,
+      text: '',
+    };
+
+  //  const { selection, suggestions, text } = tcSnapshot;  
+  const {
+    /* ▼ give it a fallback object right here */
+    selection = { start: 0, end: 0 },
+    suggestions,
+    text,
+  } = tcSnapshot;
 
   const { enabled } = useStateStore(messageComposer.configState, configStateSelector);
 
@@ -112,6 +248,7 @@ export const TextareaComposer = ({
 
   const changeHandler: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
     (e) => {
+      void channel?.keystroke?.();
       if (onChange) {
         onChange(e);
         return;
@@ -125,7 +262,17 @@ export const TextareaComposer = ({
         text: e.target.value,
       });
     },
-    [onChange, textComposer, textareaRef],
+    [channel, onChange, textComposer, textareaRef],
+  );
+
+  const blurHandler: FocusEventHandler<HTMLTextAreaElement> = useCallback(
+    (e) => {
+      if (onBlur) {
+        onBlur(e);
+      }
+      void channel?.stopTyping?.();
+    },
+    [channel, onBlur],
   );
 
   const onCompositionEnd = useCallback(() => {
@@ -202,7 +349,7 @@ export const TextareaComposer = ({
     (event) => {
       if (onScroll) {
         onScroll(event);
-      } else {
+      } else if (typeof textComposer?.closeSuggestions === 'function') {
         textComposer.closeSuggestions();
       }
     },
@@ -236,6 +383,10 @@ export const TextareaComposer = ({
     }
   }, [text, textareaRef, selection.start, selection.end, isComposing]);
 
+  useEffect(() => () => {
+    void channel?.stopTyping?.();
+  }, [channel]);
+
   useEffect(() => {
     if (textComposer.suggestions) {
       setFocusedItemIndex(0);
@@ -266,7 +417,7 @@ export const TextareaComposer = ({
         disabled={!enabled || !!cooldownRemaining}
         maxRows={maxRows}
         minRows={minRows}
-        onBlur={onBlur}
+        onBlur={blurHandler}
         onChange={changeHandler}
         onCompositionEnd={onCompositionEnd}
         onCompositionStart={onCompositionStart}

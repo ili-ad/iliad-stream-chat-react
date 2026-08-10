@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
-import type { Channel, EventTypes } from 'stream-chat';
+import type { Channel, EventTypes } from 'chat-shim';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};
@@ -28,10 +28,7 @@ export function useSelectedChannelState<O>({
     (onStoreChange: (value: O) => void) => {
       if (!channel) return noop;
 
-      const subscriptions = stateChangeEventKeys.map((et) =>
-        channel.on(et, () => {
-          onStoreChange(selector(channel));
-        }),
+      const subscriptions = stateChangeEventKeys.map(
       );
 
       return () => subscriptions.forEach((subscription) => subscription.unsubscribe());

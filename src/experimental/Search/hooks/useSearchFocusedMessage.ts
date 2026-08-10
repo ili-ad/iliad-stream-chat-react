@@ -1,4 +1,4 @@
-import type { InternalSearchControllerState } from 'stream-chat';
+import type { InternalSearchControllerState } from 'chat-shim';
 import { useChatContext } from '../../../context';
 import { useStateStore } from '../../../store';
 

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useCallback } from 'react';
-import type { UserResponse } from 'stream-chat';
+import type { UserResponse } from 'chat-shim';
 
 export type OnMentionAction = (
   event: React.BaseSyntheticEvent,

@@ -4,7 +4,7 @@ import calendar from 'dayjs/plugin/calendar';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import type { PropsWithChildren } from 'react';
 import type { TFunction } from 'i18next';
-import type { TranslationLanguages } from 'stream-chat';
+import type { TranslationLanguages } from 'chat-shim';
 
 import { getDisplayName } from './utils/getDisplayName';
 import { defaultDateTimeParser, defaultTranslatorFunction } from '../i18n/utils';

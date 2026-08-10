@@ -6,7 +6,7 @@ import type {
   LocalMessage,
   Mute,
   ChannelState as StreamChannelState,
-} from 'stream-chat';
+} from 'chat-shim';
 
 import type {
   ChannelUnreadUiState,
@@ -21,6 +21,13 @@ export type ChannelNotifications = Array<{
   text: string;
   type: 'success' | 'error';
 }>;
+
+export type TypingUser = {
+  id: string;
+  name?: string;
+  role?: string;
+  parent_id?: string;
+};
 
 export type ChannelState = {
   suppressAutoscroll: boolean;
@@ -41,11 +48,12 @@ export type ChannelState = {
   threadMessages?: LocalMessage[];
   threadSuppressAutoscroll?: boolean;
   typing?: StreamChannelState['typing'];
+  typingUsers?: TypingUser[];
   watcherCount?: number;
   watchers?: StreamChannelState['watchers'];
 };
 
-export type ChannelStateContextValue = Omit<ChannelState, 'typing'> & {
+export type ChannelStateContextValue = ChannelState & {
   channel: Channel;
   channelCapabilities: Record<string, boolean>;
   channelConfig: ChannelConfigWithInfo | undefined;
@@ -57,6 +65,7 @@ export type ChannelStateContextValue = Omit<ChannelState, 'typing'> & {
   giphyVersion?: GiphyVersions;
   mutes?: Array<Mute>;
   watcher_count?: number;
+  typingUsers?: TypingUser[];
 };
 
 export const ChannelStateContext = React.createContext<

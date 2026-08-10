@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
-import type { UserResponse } from 'stream-chat';
+import type { UserResponse } from 'chat-shim';
 
 import { Icon } from '../Threads/icons';
 import { getWholeChar } from '../../utils';

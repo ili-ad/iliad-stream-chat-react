@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import type { SearchSource, SearchSourceState } from 'stream-chat';
+import type { SearchSource, SearchSourceState } from 'chat-shim';
 
 import { useSearchContext } from '../SearchContext';
 import { useTranslationContext } from '../../../context';

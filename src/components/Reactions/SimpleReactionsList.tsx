@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 import React, { useState } from 'react';
 import clsx from 'clsx';
 
-import type { ReactionGroupResponse, ReactionResponse } from 'stream-chat';
+import type { ReactionGroupResponse, ReactionResponse } from 'chat-shim';
 import type { MessageContextValue } from '../../context/MessageContext';
 import { useMessageContext } from '../../context/MessageContext';
 import { useProcessReactions } from './hooks/useProcessReactions';

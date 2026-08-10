@@ -7,7 +7,7 @@ import { LoadingIndicator } from '../../Loading';
 import { useStateStore } from '../../../store';
 import { usePollContext, useTranslationContext } from '../../../context';
 
-import type { PollAnswer, PollState } from 'stream-chat';
+import type { PollAnswer, PollState } from 'chat-shim';
 
 type PollStateSelectorReturnValue = {
   is_closed: boolean | undefined;

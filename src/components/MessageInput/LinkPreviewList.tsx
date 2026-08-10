@@ -4,8 +4,8 @@ import type {
   LinkPreview,
   LinkPreviewsManagerState,
   MessageComposerState,
-} from 'stream-chat';
-import { LinkPreviewsManager } from 'stream-chat';
+} from 'chat-shim';
+import { LinkPreviewsManager } from 'chat-shim';
 import { useStateStore } from '../../store';
 import { PopperTooltip } from '../Tooltip';
 import { useEnterLeaveHandlers } from '../Tooltip/hooks';
@@ -24,30 +24,70 @@ const messageComposerStateSelector = (state: MessageComposerState) => ({
   quotedMessage: state.quotedMessage,
 });
 
+// export const LinkPreviewList = () => {
+//   const messageComposer = useMessageComposer();
+//   const { linkPreviewsManager } = messageComposer;
+//   const { quotedMessage } = useStateStore(
+//     messageComposer.state,
+//     messageComposerStateSelector,
+//   );
+//   const { linkPreviews } = useStateStore(
+//     linkPreviewsManager.state,
+//     linkPreviewsManagerStateSelector,
+//   );
+
+//   const showLinkPreviews = linkPreviews.length > 0 && !quotedMessage;
+
+//   if (!showLinkPreviews) return null;
+
+//   return (
+//     <div className='str-chat__link-preview-list'>
+//       {linkPreviews.map((linkPreview) => (
+//         <LinkPreviewCard key={linkPreview.og_scrape_url} linkPreview={linkPreview} />
+//       ))}
+//     </div>
+//   );
+// };
+
+
 export const LinkPreviewList = () => {
-  const messageComposer = useMessageComposer();
-  const { linkPreviewsManager } = messageComposer;
-  const { quotedMessage } = useStateStore(
-    messageComposer.state,
-    messageComposerStateSelector,
-  );
-  const { linkPreviews } = useStateStore(
-    linkPreviewsManager.state,
-    linkPreviewsManagerStateSelector,
-  );
+  const composer               = useMessageComposer();
+  const { linkPreviewsManager } = composer;
 
-  const showLinkPreviews = linkPreviews.length > 0 && !quotedMessage;
+  /* ---------- quotedMessage ---------- */
+  let quotedMessage: MessageComposerState['quotedMessage'] | undefined;
+  if (composer.state?.getLatestValue) {
+    const snapshot = useStateStore(
+      composer.state,
+      messageComposerStateSelector,
+    );
+    quotedMessage = snapshot?.quotedMessage;
+  }
 
-  if (!showLinkPreviews) return null;
+  /* ---------- linkPreviews ---------- */
+  let linkPreviews: LinkPreview[] = [];
+  if (linkPreviewsManager?.state?.getLatestValue) {
+    const snapshot = useStateStore(
+      linkPreviewsManager.state,
+      linkPreviewsManagerStateSelector,
+    );
+    linkPreviews = snapshot?.linkPreviews ?? [];
+  }
+
+  /* ---------- render ---------- */
+  const show = linkPreviews.length > 0 && !quotedMessage;
+  if (!show) return null;
 
   return (
     <div className='str-chat__link-preview-list'>
-      {linkPreviews.map((linkPreview) => (
-        <LinkPreviewCard key={linkPreview.og_scrape_url} linkPreview={linkPreview} />
+      {linkPreviews.map((lp) => (
+        <LinkPreviewCard key={lp.og_scrape_url} linkPreview={lp} />
       ))}
     </div>
   );
 };
+
+
 
 type LinkPreviewProps = {
   linkPreview: LinkPreview;
@@ -71,7 +111,7 @@ export const LinkPreviewCard = ({ linkPreview }: LinkPreviewProps) => {
         'str-chat__link-preview-card--loading':
           LinkPreviewsManager.previewIsLoading(linkPreview),
       })}
-      data-testid='link-preview-card'
+      data-testid='link-preview'
     >
       <PopperTooltip
         offset={[0, 5]}

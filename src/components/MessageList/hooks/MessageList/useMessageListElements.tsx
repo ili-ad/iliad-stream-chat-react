@@ -7,7 +7,7 @@ import { getLastReceived } from '../../utils';
 import { useChatContext } from '../../../../context/ChatContext';
 import { useComponentContext } from '../../../../context/ComponentContext';
 
-import type { ChannelState as StreamChannelState } from 'stream-chat';
+import type { ChannelState as StreamChannelState } from 'chat-shim';
 
 import type { GroupStyle, RenderedMessage } from '../../utils';
 import type { ChannelUnreadUiState } from '../../../../types/types';

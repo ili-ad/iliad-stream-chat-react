@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileIcon } from '../ReactFileUtilities';
-import type { Attachment } from 'stream-chat';
+import type { Attachment } from 'chat-shim';
 
 import { DownloadButton, FileSizeIndicator } from './components';
 
@@ -15,7 +15,7 @@ const UnMemoizedFileAttachment = ({ attachment }: FileAttachmentProps) => (
       <div className='str-chat__message-attachment-file--item-first-row'>
         <div
           className='str-chat__message-attachment-file--item-name'
-          data-testid='file-title'
+          data-testid='attachment-name'
         >
           {attachment.title}
         </div>

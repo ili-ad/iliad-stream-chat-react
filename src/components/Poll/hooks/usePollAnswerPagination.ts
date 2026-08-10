@@ -6,9 +6,10 @@ import type {
 } from '../../InfiniteScrollPaginator/hooks/useCursorPaginator';
 import { useCursorPaginator } from '../../InfiniteScrollPaginator/hooks/useCursorPaginator';
 import { usePollContext } from '../../../context';
+import { chatAPI } from '../../../api/chatAPI';
 
 import { useStateStore } from '../../../store';
-import type { PollAnswer, PollAnswersQueryParams, PollVote } from 'stream-chat';
+import type { PollAnswer, PollAnswersQueryParams, PollVote } from 'chat-shim';
 
 const paginationStateSelector = (
   state: CursorPaginatorState<PollVote>,
@@ -29,12 +30,9 @@ export const usePollAnswerPagination = ({
 
   const paginationFn = useCallback<PaginationFn<PollAnswer>>(
     async (next) => {
-      const { next: newNext, votes } = await poll.queryAnswers({
-        filter: paginationParams?.filter,
-        options: !next
-          ? paginationParams?.options
-          : { ...paginationParams?.options, next },
-        sort: { created_at: -1, ...paginationParams?.sort },
+      const { next: newNext, votes } = await chatAPI.queryAnswers(poll, {
+        ...(paginationParams ?? {}),
+        next,
       });
       return { items: votes, next: newNext };
     },

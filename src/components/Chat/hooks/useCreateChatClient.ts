@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
+import { StreamChat } from 'chat-shim';
 
-import { StreamChat } from 'stream-chat';
+import { chatAPI } from '../../../api/chatAPI';
 
 import type {
   OwnUserResponse,
   StreamChatOptions,
   TokenOrProvider,
   UserResponse,
-} from 'stream-chat';
+} from 'chat-shim';
 
 /**
  * React hook to create, connect and return `StreamChat` client.
@@ -37,7 +38,7 @@ export const useCreateChatClient = ({
     let didUserConnectInterrupt = false;
 
     const connectionPromise = client
-      .connectUser(cachedUserData, tokenOrProvider)
+      .connectUser(cachedUserData, tokenOrProvider as string)
       .then(() => {
         if (!didUserConnectInterrupt) setChatClient(client);
       });
@@ -46,9 +47,18 @@ export const useCreateChatClient = ({
       didUserConnectInterrupt = true;
       setChatClient(null);
       connectionPromise
-        .then(() => client.disconnectUser())
+        .then(async () => {
+          client.disconnectUser();
+          await chatAPI.endSession();
+        })
         .then(() => {
           console.log(`Connection for user "${cachedUserData.id}" has been closed`);
+        })
+        .catch((error) => {
+          console.error(
+            `Failed to disconnect session for user "${cachedUserData.id}"`,
+            error,
+          );
         });
     };
   }, [apiKey, cachedUserData, cachedOptions, tokenOrProvider]);

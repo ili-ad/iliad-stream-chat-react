@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ReactionResponse, ReactionSort } from 'stream-chat';
+import type { ReactionResponse, ReactionSort } from 'chat-shim';
 import type { MessageContextValue } from '../../../context';
 import { useMessageContext } from '../../../context';
 

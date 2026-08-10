@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SearchControllerState } from 'stream-chat';
+import type { SearchControllerState } from 'chat-shim';
 
 import { SearchSourceResults as DefaultSourceSearchResults } from './SearchSourceResults';
 import { SearchResultsHeader as DefaultSearchResultsHeader } from './SearchResultsHeader';

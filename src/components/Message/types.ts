@@ -1,11 +1,11 @@
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
-import type { ReactionSort, UserResponse } from 'stream-chat';
+import type { ReactionSort, UserResponse } from 'chat-shim';
 
 import type { PinPermissions, UserEventHandler } from './hooks';
 import type { MessageActionsArray } from './utils';
 
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 import type { GroupStyle } from '../MessageList/utils';
 import type { MessageInputProps } from '../MessageInput/MessageInput';
 import type { ReactionDetailsComparator, ReactionsComparator } from '../Reactions/types';

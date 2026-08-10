@@ -1,7 +1,7 @@
 import { useChannelActionContext } from '../../../context/ChannelActionContext';
 
 import type React from 'react';
-import type { LocalMessage, UserResponse } from 'stream-chat';
+import type { LocalMessage, UserResponse } from 'chat-shim';
 
 import type { ReactEventHandler } from '../types';
 

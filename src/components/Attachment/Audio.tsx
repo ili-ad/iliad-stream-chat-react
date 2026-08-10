@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Attachment } from 'stream-chat';
+import type { Attachment } from 'chat-shim';
 
 import { DownloadButton, FileSizeIndicator, PlayButton, ProgressBar } from './components';
 import { useAudioController } from './hooks/useAudioController';

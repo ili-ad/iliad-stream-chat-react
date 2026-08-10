@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Message } from '../Message/Message';
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 
 export type GiphyPreviewMessageProps = {
   message: LocalMessage;

@@ -3,7 +3,9 @@ import { validateAndGetMessage } from '../utils';
 import { useChatContext } from '../../../context/ChatContext';
 import { useTranslationContext } from '../../../context/TranslationContext';
 
-import type { LocalMessage } from 'stream-chat';
+import { chatAPI } from '../../../api/chatAPI';
+
+import type { LocalMessage } from 'chat-shim';
 import type { ReactEventHandler } from '../types';
 
 export const missingUseFlagHandlerParameterWarning =
@@ -37,7 +39,11 @@ export const useFlagHandler = (
     }
 
     try {
-      await client.flagMessage(message.id);
+      await chatAPI.flagMessage({
+        message,
+        messageId: message.id,
+        userId: client.userID ?? client.user?.id ?? undefined,
+      });
 
       const successMessage =
         getSuccessNotification &&

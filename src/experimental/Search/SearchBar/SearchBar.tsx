@@ -6,7 +6,7 @@ import { useSearchQueriesInProgress } from '../hooks';
 import { useTranslationContext } from '../../../context';
 import { useStateStore } from '../../../store';
 
-import type { SearchControllerState } from 'stream-chat';
+import type { SearchControllerState } from 'chat-shim';
 
 const searchControllerStateSelector = (nextValue: SearchControllerState) => ({
   isActive: nextValue.isActive,

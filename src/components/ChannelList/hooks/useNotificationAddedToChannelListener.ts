@@ -4,8 +4,9 @@ import uniqBy from 'lodash.uniqby';
 import { getChannel } from '../../../utils/getChannel';
 
 import { useChatContext } from '../../../context/ChatContext';
+import { chatAPI } from '../../../api/chatAPI';
 
-import type { Channel, Event } from 'stream-chat';
+import type { Channel, Event } from 'chat-shim';
 
 export const useNotificationAddedToChannelListener = (
   setChannels: React.Dispatch<React.SetStateAction<Array<Channel>>>,
@@ -38,10 +39,14 @@ export const useNotificationAddedToChannelListener = (
       }
     };
 
-    client.on('notification.added_to_channel', handleEvent);
+    const subscription = chatAPI.client.on(
+      client,
+      'notification.added_to_channel',
+      handleEvent,
+    );
 
     return () => {
-      client.off('notification.added_to_channel', handleEvent);
+      subscription.unsubscribe();
     };
   }, [allowNewMessagesFromUnfilteredChannels, client, customHandler, setChannels]);
 };

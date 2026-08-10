@@ -5,7 +5,7 @@ import { DragAndDropContainer } from '../../DragAndDrop/DragAndDropContainer';
 import { useTranslationContext } from '../../../context';
 import { useMessageComposer } from '../../MessageInput';
 import { useStateStore } from '../../../store';
-import type { PollComposerState } from 'stream-chat';
+import type { PollComposerState } from 'chat-shim';
 
 const pollComposerStateSelector = (state: PollComposerState) => ({
   errors: state.errors.options,

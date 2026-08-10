@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 
-import type { Thread } from 'stream-chat';
+import type { Thread } from 'chat-shim';
 
 import { useComponentContext } from '../../../context';
 import { ThreadListItemUI as DefaultThreadListItemUI } from './ThreadListItemUI';

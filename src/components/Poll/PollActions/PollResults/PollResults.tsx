@@ -5,7 +5,7 @@ import { PollOptionWithLatestVotes } from './PollOptionWithLatestVotes';
 import { ModalHeader } from '../../../Modal/ModalHeader';
 import { useStateStore } from '../../../../store';
 import { usePollContext, useTranslationContext } from '../../../../context';
-import type { PollOption, PollState } from 'stream-chat';
+import type { PollOption, PollState } from 'chat-shim';
 
 type PollStateSelectorReturnValue = {
   name: string;

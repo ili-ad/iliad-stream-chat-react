@@ -9,7 +9,7 @@ import { isMutableRef } from './utils/utils';
 import { useComponentContext } from '../../context/ComponentContext';
 import { useMessageContext } from '../../context/MessageContext';
 
-import type { ReactionGroupResponse, ReactionResponse } from 'stream-chat';
+import type { ReactionGroupResponse, ReactionResponse } from 'chat-shim';
 import type { AvatarProps } from '../Avatar';
 
 import type { ReactionOptions } from './reactionOptions';

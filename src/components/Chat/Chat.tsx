@@ -4,9 +4,9 @@ import {
   MessageSearchSource,
   SearchController,
   UserSearchSource,
-} from 'stream-chat';
+} from 'chat-shim';
 import type { PropsWithChildren } from 'react';
-import type { StreamChat } from 'stream-chat';
+import type { StreamChat } from 'chat-shim';
 
 import { useChat } from './hooks/useChat';
 import { useCreateChatContext } from './hooks/useCreateChatContext';

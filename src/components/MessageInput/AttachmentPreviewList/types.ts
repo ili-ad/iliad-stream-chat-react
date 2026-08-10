@@ -1,4 +1,4 @@
-import type { LocalUploadAttachment } from 'stream-chat';
+import type { LocalUploadAttachment } from 'chat-shim';
 
 export type UploadAttachmentPreviewProps<A extends LocalUploadAttachment> = {
   attachment: A;

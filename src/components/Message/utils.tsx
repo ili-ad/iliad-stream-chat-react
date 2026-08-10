@@ -10,7 +10,7 @@ import type {
   Mute,
   StreamChat,
   UserResponse,
-} from 'stream-chat';
+} from 'chat-shim';
 import type { PinPermissions } from './hooks';
 import type { MessageProps } from './types';
 import type {
@@ -48,8 +48,21 @@ export const validateAndGetMessage = <T extends unknown[]>(
 export const isUserMuted = (message: LocalMessage, mutes?: Mute[]) => {
   if (!mutes || !message) return false;
 
-  const userMuted = mutes.filter((el) => el.target.id === message.user?.id);
-  return !!userMuted.length;
+  const messageUserId = message.user?.id;
+  if (messageUserId === undefined || messageUserId === null) return false;
+  const messageId = String(messageUserId);
+
+  return mutes.some((mute) => {
+    const targetId = (mute as any)?.target?.id;
+    if (targetId !== undefined && targetId !== null) {
+      return String(targetId) === messageId;
+    }
+    const directId = (mute as any)?.user_id;
+    if (typeof directId === 'number') {
+      return String(directId) === messageId;
+    }
+    return false;
+  });
 };
 
 export const MESSAGE_ACTIONS = {
@@ -413,6 +426,11 @@ export interface TooltipUsernameMapper {
  */
 export const mapToUserNameOrId: TooltipUsernameMapper = (user) => user.name || user.id;
 
+const getClientUserId = (client: StreamChat): string | undefined => {
+  void client;
+  return undefined;
+};
+
 export const getReadByTooltipText = (
   users: UserResponse[],
   t: TFunction,
@@ -433,8 +451,9 @@ export const getReadByTooltipText = (
     );
   }
   // first filter out client user, so restLength won't count it
+  const clientUserId = getClientUserId(client);
   const otherUsers = users
-    .filter((item) => item && client?.user && item.id !== client.user.id)
+    .filter((item) => item && (!clientUserId || item.id !== clientUserId))
     .map(tooltipUserNameMapper);
 
   const slicedArr = otherUsers.slice(0, 5);

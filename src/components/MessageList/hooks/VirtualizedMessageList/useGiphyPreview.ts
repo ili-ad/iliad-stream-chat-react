@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import { useChatContext } from '../../../../context/ChatContext';
+import { chatAPI } from '../../../../api/chatAPI';
 
-import type { EventHandler, LocalMessage } from 'stream-chat';
+import type { EventHandler, LocalMessage } from 'chat-shim';
 
 export const useGiphyPreview = (separateGiphyPreview: boolean) => {
   const [giphyPreviewMessage, setGiphyPreviewMessage] = useState<LocalMessage>();
@@ -19,8 +20,11 @@ export const useGiphyPreview = (separateGiphyPreview: boolean) => {
       }
     };
 
-    client.on('message.new', handleEvent);
-    return () => client.off('message.new', handleEvent);
+    const subscription = chatAPI.client.on(client, 'message.new', handleEvent);
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [client, separateGiphyPreview]);
 
   return {

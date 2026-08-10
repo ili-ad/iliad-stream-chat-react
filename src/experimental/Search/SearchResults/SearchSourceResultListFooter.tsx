@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SearchSourceState } from 'stream-chat';
+import type { SearchSourceState } from 'chat-shim';
 
 import { SearchSourceResultsLoadingIndicator as DefaultSearchSourceResultsLoadingIndicator } from './SearchSourceResultsLoadingIndicator';
 import { useSearchSourceResultsContext } from '../SearchSourceResultsContext';

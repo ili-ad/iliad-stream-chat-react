@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 import React from 'react';
 import clsx from 'clsx';
 
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 import { useChannelStateContext } from '../../context/ChannelStateContext';
 
 export type WindowProps = {
@@ -20,6 +20,12 @@ const UnMemoizedWindow = (props: PropsWithChildren<WindowProps>) => {
       className={clsx('str-chat__main-panel', {
         'str-chat__main-panel--thread-open': contextThread || propThread,
       })}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+      }}
     >
       {children}
     </div>

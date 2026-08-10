@@ -1,11 +1,13 @@
 import React from 'react';
 import clsx from 'clsx';
-import type { Channel } from 'stream-chat';
+import type { Channel } from 'chat-shim';
 
 import { useChannelMembershipState } from '../ChannelList';
 import { Icon } from './icons';
 import { useTranslationContext } from '../../context';
 
+import { chatAPI } from '../../api/chatAPI';
+import { chatSDK } from '../../chatSDKShim';
 export type ChannelPreviewActionButtonsProps = {
   channel: Channel;
 };
@@ -28,9 +30,9 @@ export function ChannelPreviewActionButtons({
         onClick={(e) => {
           e.stopPropagation();
           if (membership.pinned_at) {
-            channel.unpin();
+            void chatAPI.channel.unpin({ channel });
           } else {
-            channel.pin();
+            void chatSDK.channel.pin(channel);
           }
         }}
         title={membership.pinned_at ? t('Unpin') : t('Pin')}
@@ -47,9 +49,9 @@ export function ChannelPreviewActionButtons({
         onClick={(e) => {
           e.stopPropagation();
           if (membership.archived_at) {
-            channel.unarchive();
+            void chatSDK.channel.unarchive(channel);
           } else {
-            channel.archive();
+            void chatSDK.channel.archive(channel);
           }
         }}
         title={membership.archived_at ? t('Unarchive') : t('Archive')}

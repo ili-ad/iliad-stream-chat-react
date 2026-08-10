@@ -4,7 +4,7 @@ import { usePollOptionVotesPagination } from '../../hooks';
 import { LoadingIndicator } from '../../../Loading';
 import { InfiniteScrollPaginator } from '../../../InfiniteScrollPaginator/InfiniteScrollPaginator';
 import { PollOptionWithVotesHeader } from './PollOptionWithVotesHeader';
-import type { PollOption, PollOptionVotesQueryParams } from 'stream-chat';
+import type { PollOption, PollOptionVotesQueryParams } from 'chat-shim';
 
 export type PollOptionVotesListingProps = {
   option: PollOption;

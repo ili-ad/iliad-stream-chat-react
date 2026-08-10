@@ -7,7 +7,7 @@ import {
   usePollContext,
   useTranslationContext,
 } from '../../../../context';
-import type { PollOption, PollState, PollVote } from 'stream-chat';
+import type { PollOption, PollState, PollVote } from 'chat-shim';
 
 type PollStateSelectorReturnValue = {
   latest_votes_by_option: Record<string, PollVote[]>;

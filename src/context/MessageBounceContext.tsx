@@ -3,7 +3,7 @@ import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { useMessageContext } from './MessageContext';
 import { useChannelActionContext } from './ChannelActionContext';
 import { isMessageBounced } from '../components';
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 import type { PropsWithChildrenOnly } from '../types/types';
 
 export interface MessageBounceContextValue {

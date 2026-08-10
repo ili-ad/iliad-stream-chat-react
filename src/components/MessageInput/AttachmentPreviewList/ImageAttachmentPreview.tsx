@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react';
 import { CloseIcon, LoadingIndicatorIcon, RetryIcon } from '../icons';
 import { BaseImage as DefaultBaseImage } from '../../Gallery';
 import { useComponentContext, useTranslationContext } from '../../../context';
-import type { LocalImageAttachment } from 'stream-chat';
+import type { LocalImageAttachment } from 'chat-shim';
 import type { UploadAttachmentPreviewProps } from './types';
 
 export type ImageAttachmentPreviewProps<CustomLocalMetadata = Record<string, unknown>> =

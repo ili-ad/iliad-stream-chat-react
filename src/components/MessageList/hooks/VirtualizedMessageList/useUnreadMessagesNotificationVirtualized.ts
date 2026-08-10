@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { RenderedMessage } from '../../utils';
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 
 export type UseUnreadMessagesNotificationParams = {
   showAlways: boolean;

@@ -16,7 +16,7 @@ import { useMessageContext } from '../../context/MessageContext';
 import { useTranslationContext } from '../../context/TranslationContext';
 import { renderText } from './renderText';
 
-import type { LocalMessage, TranslationLanguages } from 'stream-chat';
+import type { LocalMessage, TranslationLanguages } from 'chat-shim';
 
 const selectColor = (number: number, dark: boolean) => {
   const hue = number * 137.508; // use golden angle approximation

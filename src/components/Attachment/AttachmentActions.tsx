@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Action, Attachment } from 'stream-chat';
+import type { Action, Attachment } from 'chat-shim';
 
 import { useTranslationContext } from '../../context';
 

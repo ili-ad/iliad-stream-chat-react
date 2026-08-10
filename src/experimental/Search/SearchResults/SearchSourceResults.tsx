@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SearchSource, SearchSourceState } from 'stream-chat';
+import type { SearchSource, SearchSourceState } from 'chat-shim';
 
 import { SearchSourceResultList as DefaultSearchSourceResultList } from './SearchSourceResultList';
 import { SearchSourceResultsEmpty as DefaultSearchSourceResultsEmpty } from './SearchSourceResultsEmpty';

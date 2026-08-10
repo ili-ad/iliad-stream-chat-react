@@ -4,8 +4,9 @@ import clsx from 'clsx';
 import { ArrowDown } from './icons';
 
 import { useChannelStateContext, useChatContext } from '../../context';
+import { chatAPI } from '../../api/chatAPI';
 
-import type { Event } from 'stream-chat';
+import type { Event } from 'chat-shim';
 import type { MessageNotificationProps } from './MessageNotification';
 
 const UnMemoizedScrollToBottomButton = (
@@ -18,9 +19,20 @@ const UnMemoizedScrollToBottomButton = (
 
   const { channel: activeChannel, client } = useChatContext();
   const { thread } = useChannelStateContext();
-  const [countUnread, setCountUnread] = useState(activeChannel?.countUnread() || 0);
+  const [countUnread, setCountUnread] = useState(() => {
+    if (!activeChannel) return 0;
+    return chatAPI.channel.countUnread({ channel: activeChannel });
+  });
   const [replyCount, setReplyCount] = useState(thread?.reply_count || 0);
   const observedEvent = threadList ? 'message.updated' : 'message.new';
+
+  useEffect(() => {
+    if (!activeChannel) {
+      setCountUnread(0);
+      return;
+    }
+    setCountUnread(chatAPI.channel.countUnread({ channel: activeChannel }));
+  }, [activeChannel]);
 
   useEffect(() => {
     const handleEvent = (event: Event) => {
@@ -49,10 +61,11 @@ const UnMemoizedScrollToBottomButton = (
         setCountUnread(() => newReplyCount - replyCount);
       }
     };
-    client.on(observedEvent, handleEvent);
+
+    const subscription = chatAPI.client.on(client, observedEvent, handleEvent);
 
     return () => {
-      client.off(observedEvent, handleEvent);
+      subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChannel, isMessageListScrolledToBottom, observedEvent, replyCount, thread]);
