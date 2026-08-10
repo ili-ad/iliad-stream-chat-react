@@ -1,0 +1,24 @@
+{
+  "upstream_repository": "https://github.com/GetStream/stream-chat-react.git",
+  "upstream_baseline_tag": "v13.1.0",
+  "upstream_baseline_commit": "c9802c782a3e47bd44873884260c13213b6ee380",
+  "upstream_baseline_tree": "6f4860a5c85f374afce86cce61b16bf6f9e6db36",
+  "upstream_baseline_src_tree": "cb12a962c9a0879816fa0bd069e40d83c127c57a",
+  "historical_iliad_stream_ui_commit": "c4ed7bf69ba93609833561c594a419ace37233c2",
+  "source_jatte_repository": "ili-ad/jatte-headless",
+  "source_jatte_commit": "08130d52bd18e865009c3df4be5e1e2828641224",
+  "source_jatte_path": "libs/stream-chat-shim",
+  "source_jatte_src_tree": "f13cbdd600e4e18bb63ea8aaeb735cdbbc0892d3",
+  "source_jatte_package_blob": "59e1c0dcb54a9e2b62a442843cbdd0f148f22594",
+  "source_jatte_test_tree": "7953c123d617eaf029840536fd1bfc48eb712ca9",
+  "source_jatte_status_tree": "2167e3a48a4d11cf364180fac281f123b18ea902",
+  "source_jatte_cleanup_tree": "9a6d0798af8bc445dae7a4e3d52f095f8ff52fa4",
+  "porting_anchors": [
+    "37ea52d4467e81665ddd552375012c3551edf2e2",
+    "f788d05613eec8924eb94554a59c98ed6ba0ea26",
+    "f3382ca97d63cf379a32cfd2a12014ca3ab659ba",
+    "55cc95cd2f3210aa23e6bb4fae7d3d0db65577e8"
+  ],
+  "history_strategy": "SNAPSHOT_RECONCILIATION",
+  "stream_fork_program": "STREAM-FORK-01"
+}

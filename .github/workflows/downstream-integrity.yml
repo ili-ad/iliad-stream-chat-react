@@ -1,0 +1,20 @@
+name: Downstream integrity
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify ancestry, provenance, source parity, and realtime boundary
+        run: python3 scripts/verify_iliad_provenance.py
+      - name: Check repository-owned diff hygiene
+        run: >-
+          git diff --check
+          c4ed7bf69ba93609833561c594a419ace37233c2..HEAD
+          -- . ':(exclude)src/**' ':(exclude)__tests__/**'
