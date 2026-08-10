@@ -1,11 +1,12 @@
 import { defaultPinPermissions, validateAndGetMessage } from '../utils';
+import { pinMessage, unpinMessage } from '../../../chatSDKShim';
 
 import { useChannelActionContext } from '../../../context/ChannelActionContext';
 import { useChannelStateContext } from '../../../context/ChannelStateContext';
 import { useChatContext } from '../../../context/ChatContext';
 import { useTranslationContext } from '../../../context/TranslationContext';
 
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 import type { ReactEventHandler } from '../types';
 
 // @deprecated in favor of `channelCapabilities` - TODO: remove in next major release
@@ -49,7 +50,7 @@ export const usePinHandler = (
   const { getErrorNotification, notify } = notifications;
 
   const { updateMessage } = useChannelActionContext('usePinHandler');
-  const { channelCapabilities = {} } = useChannelStateContext('usePinHandler');
+  const { channel, channelCapabilities = {} } = useChannelStateContext('usePinHandler');
   const { client } = useChatContext('usePinHandler');
   const { t } = useTranslationContext('usePinHandler');
 
@@ -71,7 +72,11 @@ export const usePinHandler = (
 
         updateMessage(optimisticMessage);
 
-        await client.pinMessage(message);
+        await pinMessage(message.id, {
+          channel,
+          message,
+          user: client.user ?? undefined,
+        });
       } catch (e) {
         const errorMessage =
           getErrorNotification && validateAndGetMessage(getErrorNotification, [message]);
@@ -91,7 +96,7 @@ export const usePinHandler = (
 
         updateMessage(optimisticMessage);
 
-        await client.unpinMessage(message);
+        await unpinMessage(message.id, { channel, message });
       } catch (e) {
         const errorMessage =
           getErrorNotification && validateAndGetMessage(getErrorNotification, [message]);

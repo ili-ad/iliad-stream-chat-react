@@ -1,4 +1,4 @@
-import type { ComponentProps, PropsWithChildren } from 'react';
+import type { ComponentProps, PropsWithChildren } from "react";
 import React, {
   useCallback,
   useEffect,
@@ -7,11 +7,11 @@ import React, {
   useReducer,
   useRef,
   useState,
-} from 'react';
-import clsx from 'clsx';
-import debounce from 'lodash.debounce';
-import defaultsDeep from 'lodash.defaultsdeep';
-import throttle from 'lodash.throttle';
+} from "react";
+import clsx from "clsx";
+import debounce from "lodash.debounce";
+import defaultsDeep from "lodash.defaultsdeep";
+import throttle from "lodash.throttle";
 import type {
   APIErrorResponse,
   ChannelAPIResponse,
@@ -29,27 +29,27 @@ import type {
   Channel as StreamChannel,
   StreamChat,
   UpdateMessageOptions,
-} from 'stream-chat';
-import { localMessageToNewMessagePayload } from 'stream-chat';
+} from "chat-shim";
+import { localMessageToNewMessagePayload } from "chat-shim";
 
-import { initialState, makeChannelReducer } from './channelState';
-import { useCreateChannelStateContext } from './hooks/useCreateChannelStateContext';
-import { useCreateTypingContext } from './hooks/useCreateTypingContext';
-import { useEditMessageHandler } from './hooks/useEditMessageHandler';
-import { useIsMounted } from './hooks/useIsMounted';
-import type { OnMentionAction } from './hooks/useMentionsHandlers';
-import { useMentionsHandlers } from './hooks/useMentionsHandlers';
+import { initialState, makeChannelReducer } from "./channelState";
+import { useCreateChannelStateContext } from "./hooks/useCreateChannelStateContext";
+import { useCreateTypingContext } from "./hooks/useCreateTypingContext";
+import { useEditMessageHandler } from "./hooks/useEditMessageHandler";
+import { useIsMounted } from "./hooks/useIsMounted";
+import type { OnMentionAction } from "./hooks/useMentionsHandlers";
+import { useMentionsHandlers } from "./hooks/useMentionsHandlers";
 
-import type { LoadingErrorIndicatorProps } from '../Loading';
-import { LoadingErrorIndicator as DefaultLoadingErrorIndicator } from '../Loading';
-import { LoadingChannel as DefaultLoadingIndicator } from './LoadingChannel';
+import type { LoadingErrorIndicatorProps } from "../Loading";
+import { LoadingErrorIndicator as DefaultLoadingErrorIndicator } from "../Loading";
+import { LoadingChannel as DefaultLoadingIndicator } from "./LoadingChannel";
 
 import type {
   ChannelActionContextValue,
   ChannelNotifications,
   ComponentContextValue,
   MarkReadWrapperOptions,
-} from '../../context';
+} from "../../context";
 import {
   ChannelActionProvider,
   ChannelStateProvider,
@@ -57,105 +57,118 @@ import {
   useChatContext,
   useTranslationContext,
   WithComponents,
-} from '../../context';
+} from "../../context";
 
-import { CHANNEL_CONTAINER_ID } from './constants';
+import { CHANNEL_CONTAINER_ID } from "./constants";
 import {
   DEFAULT_HIGHLIGHT_DURATION,
   DEFAULT_INITIAL_CHANNEL_PAGE_SIZE,
   DEFAULT_JUMP_TO_PAGE_SIZE,
   DEFAULT_NEXT_CHANNEL_PAGE_SIZE,
   DEFAULT_THREAD_PAGE_SIZE,
-} from '../../constants/limits';
+} from "../../constants/limits";
 
-import { hasMoreMessagesProbably } from '../MessageList';
+import { hasMoreMessagesProbably } from "../MessageList";
 import {
   getChatContainerClass,
   useChannelContainerClasses,
   useImageFlagEmojisOnWindowsClass,
-} from './hooks/useChannelContainerClasses';
-import { findInMsgSetByDate, findInMsgSetById, makeAddNotifications } from './utils';
-import { useThreadContext } from '../Threads';
-import { getChannel } from '../../utils';
+} from "./hooks/useChannelContainerClasses";
+import {
+  findInMsgSetByDate,
+  findInMsgSetById,
+  makeAddNotifications,
+} from "./utils";
+import { useThreadContext } from "../Threads";
+import { getChannel } from "../../utils";
 import type {
   ChannelUnreadUiState,
   GiphyVersions,
   ImageAttachmentSizeHandler,
   VideoAttachmentSizeHandler,
-} from '../../types/types';
+} from "../../types/types";
 import {
   getImageAttachmentConfiguration,
   getVideoAttachmentConfiguration,
-} from '../Attachment/attachment-sizing';
-import { useSearchFocusedMessage } from '../../experimental/Search/hooks';
+} from "../Attachment/attachment-sizing";
+import { useSearchFocusedMessage } from "../../experimental/Search/hooks";
+import {
+  channelGetReplies,
+  channelMarkRead,
+  channelQuery,
+  channelStateLoadMessageIntoState,
+  loadMessageIntoChannelState,
+} from "../../chatSDKShim";
+import { chatAPI } from "../../api/chatAPI";
+import type { ChannelEventSubscription } from "../../client";
 
 type ChannelPropsForwardedToComponentContext = Pick<
   ComponentContextValue,
-  | 'Attachment'
-  | 'AttachmentPreviewList'
-  | 'AttachmentSelector'
-  | 'AttachmentSelectorInitiationButtonContents'
-  | 'AudioRecorder'
-  | 'AutocompleteSuggestionItem'
-  | 'AutocompleteSuggestionList'
-  | 'Avatar'
-  | 'BaseImage'
-  | 'CooldownTimer'
-  | 'CustomMessageActionsList'
-  | 'DateSeparator'
-  | 'EditMessageInput'
-  | 'EmojiPicker'
-  | 'emojiSearchIndex'
-  | 'EmptyStateIndicator'
-  | 'FileUploadIcon'
-  | 'GiphyPreviewMessage'
-  | 'HeaderComponent'
-  | 'Input'
-  | 'LinkPreviewList'
-  | 'LoadingIndicator'
-  | 'Message'
-  | 'MessageActions'
-  | 'MessageBouncePrompt'
-  | 'MessageBlocked'
-  | 'MessageDeleted'
-  | 'MessageIsThreadReplyInChannelButtonIndicator'
-  | 'MessageListNotifications'
-  | 'MessageListMainPanel'
-  | 'MessageNotification'
-  | 'MessageOptions'
-  | 'MessageRepliesCountButton'
-  | 'MessageStatus'
-  | 'MessageSystem'
-  | 'MessageTimestamp'
-  | 'ModalGallery'
-  | 'PinIndicator'
-  | 'PollActions'
-  | 'PollContent'
-  | 'PollCreationDialog'
-  | 'PollHeader'
-  | 'PollOptionSelector'
-  | 'QuotedMessage'
-  | 'QuotedMessagePreview'
-  | 'QuotedPoll'
-  | 'reactionOptions'
-  | 'ReactionSelector'
-  | 'ReactionsList'
-  | 'ReactionsListModal'
-  | 'ReminderNotification'
-  | 'SendButton'
-  | 'SendToChannelCheckbox'
-  | 'StartRecordingAudioButton'
-  | 'TextareaComposer'
-  | 'ThreadHead'
-  | 'ThreadHeader'
-  | 'ThreadStart'
-  | 'Timestamp'
-  | 'TypingIndicator'
-  | 'UnreadMessagesNotification'
-  | 'UnreadMessagesSeparator'
-  | 'VirtualMessage'
-  | 'StopAIGenerationButton'
-  | 'StreamedMessageText'
+  | "Attachment"
+  | "AttachmentPreviewList"
+  | "AttachmentSelector"
+  | "AttachmentSelectorInitiationButtonContents"
+  | "AudioRecorder"
+  | "AutocompleteSuggestionItem"
+  | "AutocompleteSuggestionList"
+  | "Avatar"
+  | "BaseImage"
+  | "CooldownTimer"
+  | "CustomMessageActionsList"
+  | "DateSeparator"
+  | "EditMessageInput"
+  | "EmojiPicker"
+  | "emojiSearchIndex"
+  | "EmptyStateIndicator"
+  | "FileUploadIcon"
+  | "GiphyPreviewMessage"
+  | "HeaderComponent"
+  | "Input"
+  | "LinkPreviewList"
+  | "LoadingIndicator"
+  | "Message"
+  | "MessageActions"
+  | "MessageBouncePrompt"
+  | "MessageBlocked"
+  | "MessageDeleted"
+  | "MessageIsThreadReplyInChannelButtonIndicator"
+  | "MessageListNotifications"
+  | "MessageListMainPanel"
+  | "MessageNotification"
+  | "MessageOptions"
+  | "MessageRepliesCountButton"
+  | "MessageStatus"
+  | "MessageSystem"
+  | "MessageTimestamp"
+  | "ModalGallery"
+  | "PinIndicator"
+  | "PollActions"
+  | "PollContent"
+  | "PollCreationDialog"
+  | "PollHeader"
+  | "PollOptionSelector"
+  | "QuotedMessage"
+  | "QuotedMessagePreview"
+  | "QuotedPoll"
+  | "reactionOptions"
+  | "ReactionSelector"
+  | "ReactionsList"
+  | "ReactionsListModal"
+  | "ReminderNotification"
+  | "SendButton"
+  | "SendToChannelCheckbox"
+  | "StartRecordingAudioButton"
+  | "TextareaComposer"
+  | "ThreadHead"
+  | "ThreadHeader"
+  | "ThreadStart"
+  | "Timestamp"
+  | "TypingIndicator"
+  | "UnreadMessagesNotification"
+  | "UnreadMessagesSeparator"
+  | "VirtualMessage"
+  | "StopAIGenerationButton"
+  | "StreamedMessageText"
 >;
 
 export type ChannelProps = ChannelPropsForwardedToComponentContext & {
@@ -182,13 +195,13 @@ export type ChannelProps = ChannelPropsForwardedToComponentContext & {
     channel: StreamChannel,
     message: Message,
     options?: SendMessageOptions,
-  ) => ReturnType<StreamChannel['sendMessage']> | void;
+  ) => ReturnType<StreamChannel["sendMessage"]> | void;
   /** Custom action handler to override the default `client.updateMessage` request function (advanced usage only) */
   doUpdateMessageRequest?: (
     cid: string,
     updatedMessage: LocalMessage | MessageResponse,
     options?: UpdateMessageOptions,
-  ) => ReturnType<StreamChat['updateMessage']>;
+  ) => ReturnType<StreamChat["updateMessage"]>;
   /** Custom UI component to be shown if no active channel is set, defaults to null and skips rendering the Channel component */
   EmptyPlaceholder?: React.ReactElement;
   /** The giphy version to render - check the keys of the [Image Object](https://developers.giphy.com/docs/api/schema#image-object) for possible values. Uses 'fixed_height' by default */
@@ -221,8 +234,8 @@ const ChannelContainer = ({
   children,
   className: additionalClassName,
   ...props
-}: PropsWithChildren<ComponentProps<'div'>>) => {
-  const { customClasses, theme } = useChatContext('Channel');
+}: PropsWithChildren<ComponentProps<"div">>) => {
+  const { customClasses, theme } = useChatContext("Channel");
   const { channelClass, chatClass } = useChannelContainerClasses({
     customClasses,
   });
@@ -242,11 +255,12 @@ const UnMemoizedChannel = (props: PropsWithChildren<ChannelProps>) => {
     LoadingIndicator = DefaultLoadingIndicator,
   } = props;
 
-  const { channel: contextChannel, channelsQueryState } = useChatContext('Channel');
+  const { channel: contextChannel, channelsQueryState } =
+    useChatContext("Channel");
 
   const channel = propsChannel || contextChannel;
 
-  if (channelsQueryState.queryInProgress === 'reload' && LoadingIndicator) {
+  if (channelsQueryState.queryInProgress === "reload" && LoadingIndicator) {
     return (
       <ChannelContainer>
         <LoadingIndicator />
@@ -305,10 +319,17 @@ const ChannelInner = (
     [propChannelQueryOptions],
   );
 
-  const { client, customClasses, latestMessageDatesByChannels, mutes, searchController } =
-    useChatContext('Channel');
-  const { t } = useTranslationContext('Channel');
-  const chatContainerClass = getChatContainerClass(customClasses?.chatContainer);
+  const {
+    client,
+    customClasses,
+    latestMessageDatesByChannels,
+    mutes,
+    searchController,
+  } = useChatContext("Channel");
+  const { t } = useTranslationContext("Channel");
+  const chatContainerClass = getChatContainerClass(
+    customClasses?.chatContainer,
+  );
   const windowsEmojiClass = useImageFlagEmojisOnWindowsClass();
   const thread = useThreadContext();
 
@@ -335,23 +356,27 @@ const ChannelInner = (
   const jumpToMessageFromSearch = useSearchFocusedMessage();
   const isMounted = useIsMounted();
 
-  const originalTitle = useRef('');
+  const originalTitle = useRef("");
   const lastRead = useRef<Date | undefined>(undefined);
   const online = useRef(true);
 
-  const clearHighlightedMessageTimeoutId = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const clearHighlightedMessageTimeoutId = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   const channelCapabilitiesArray = channel.data?.own_capabilities as string[];
 
-  const throttledCopyStateFromChannel = throttle(
-    () => dispatch({ channel, type: 'copyStateFromChannelOnEvent' }),
-    500,
-    {
-      leading: true,
-      trailing: true,
-    },
+  const throttledCopyStateFromChannel = useMemo(
+    () =>
+      throttle(
+        () => dispatch({ channel, type: "copyStateFromChannelOnEvent" }),
+        500,
+        {
+          leading: true,
+          trailing: true,
+        },
+      ),
+    [channel],
   );
 
   const setChannelUnreadUiState = useMemo(
@@ -362,6 +387,17 @@ const ChannelInner = (
       }),
     [],
   );
+
+  useEffect(() => {
+    const store = channel?.stateStore;
+    if (!store || typeof store.subscribe !== "function") return;
+
+    const unsubscribe = store.subscribe(throttledCopyStateFromChannel);
+
+    return () => {
+      if (typeof unsubscribe === "function") unsubscribe();
+    };
+  }, [channel?.stateStore, throttledCopyStateFromChannel]);
 
   const markRead = useMemo(
     () =>
@@ -378,14 +414,17 @@ const ChannelInner = (
             if (doMarkReadRequest) {
               doMarkReadRequest(
                 channel,
-                updateChannelUiUnreadState ? setChannelUnreadUiState : undefined,
+                updateChannelUiUnreadState
+                  ? setChannelUnreadUiState
+                  : undefined,
               );
             } else {
-              const markReadResponse = await channel.markRead();
+              const markReadResponse = await channelMarkRead(channel);
               if (updateChannelUiUnreadState && markReadResponse) {
                 _setChannelUnreadUiState({
                   last_read: lastRead.current,
-                  last_read_message_id: markReadResponse.event.last_read_message_id,
+                  last_read_message_id:
+                    markReadResponse.event.last_read_message_id,
                   unread_messages: 0,
                 });
               }
@@ -397,7 +436,7 @@ const ChannelInner = (
               document.title = originalTitle.current;
             }
           } catch (e) {
-            console.error(t('Failed to mark channel as read'));
+            console.error(t("Failed to mark channel as read"));
           }
         },
         500,
@@ -418,22 +457,28 @@ const ChannelInner = (
       dispatch({
         channel,
         message: event.message,
-        type: 'updateThreadOnEvent',
+        type: "updateThreadOnEvent",
       });
     }
 
-    if (event.type === 'user.watching.start' || event.type === 'user.watching.stop')
+    if (
+      event.type === "user.watching.start" ||
+      event.type === "user.watching.stop"
+    )
       return;
 
-    if (event.type === 'typing.start' || event.type === 'typing.stop') {
-      return dispatch({ channel, type: 'setTyping' });
+    if (event.type === "typing.start" || event.type === "typing.stop") {
+      return dispatch({ channel, type: "setTyping" });
     }
 
-    if (event.type === 'connection.changed' && typeof event.online === 'boolean') {
+    if (
+      event.type === "connection.changed" &&
+      typeof event.online === "boolean"
+    ) {
       online.current = event.online;
     }
 
-    if (event.type === 'message.new') {
+    if (event.type === "message.new") {
       const mainChannelUpdated =
         !event.message?.parent_id || event.message?.show_in_channel;
 
@@ -443,7 +488,10 @@ const ChannelInner = (
           channelConfig?.read_events &&
           !channel.muteStatus().muted
         ) {
-          const unread = channel.countUnread(lastRead.current);
+          const unread = chatAPI.channel.countUnread({
+            channel,
+            lastRead: lastRead.current,
+          });
 
           if (activeUnreadHandler) {
             activeUnreadHandler(unread, originalTitle.current);
@@ -470,20 +518,17 @@ const ChannelInner = (
       }
     }
 
-    if (event.type === 'user.deleted') {
+    if (event.type === "user.deleted") {
       const oldestID = channel.state?.messages?.[0]?.id;
 
       /**
        * As the channel state is not normalized we re-fetch the channel data. Thus, we avoid having to search for user references in the channel state.
        */
       // FIXME: we should use channelQueryOptions if they are available
-      await channel.query({
-        messages: { id_lt: oldestID, limit: DEFAULT_NEXT_CHANNEL_PAGE_SIZE },
-        watchers: { limit: DEFAULT_NEXT_CHANNEL_PAGE_SIZE },
-      });
+      await channelQuery(channel);
     }
 
-    if (event.type === 'notification.mark_unread')
+    if (event.type === "notification.mark_unread")
       _setChannelUnreadUiState((prev) => {
         if (!(event.last_read_at && event.user)) return prev;
         return {
@@ -494,7 +539,7 @@ const ChannelInner = (
         };
       });
 
-    if (event.type === 'channel.truncated' && event.cid === channel.cid) {
+    if (event.type === "channel.truncated" && event.cid === channel.cid) {
       _setChannelUnreadUiState(undefined);
     }
 
@@ -504,6 +549,7 @@ const ChannelInner = (
   // useLayoutEffect here to prevent spinner. Use Suspense when it is available in stable release
   useLayoutEffect(() => {
     let errored = false;
+    const subscriptions: ChannelEventSubscription[] = [];
     let done = false;
 
     (async () => {
@@ -516,9 +562,9 @@ const ChannelInner = (
           if (!channel.id && channel.data?.members) {
             for (const member of channel.data.members) {
               let userId: string | undefined;
-              if (typeof member === 'string') {
+              if (typeof member === "string") {
                 userId = member;
-              } else if (typeof member === 'object') {
+              } else if (typeof member === "object") {
                 const { user, user_id } = member as ChannelMemberResponse;
                 userId = user_id || user?.id;
               }
@@ -527,11 +573,16 @@ const ChannelInner = (
               }
             }
           }
-          await getChannel({ channel, client, members, options: channelQueryOptions });
+          await getChannel({
+            channel,
+            client,
+            members,
+            options: channelQueryOptions,
+          });
           const config = channel.getConfig();
           setChannelConfig(config);
         } catch (e) {
-          dispatch({ error: e as Error, type: 'setError' });
+          dispatch({ error: e as Error, type: "setError" });
           errored = true;
         }
       }
@@ -543,7 +594,7 @@ const ChannelInner = (
         dispatch({
           channel,
           hasMore: channel.state.messagePagination.hasPrev,
-          type: 'initStateFromChannel',
+          type: "initStateFromChannel",
         });
 
         if (client.user?.id && channel.state.read[client.user.id]) {
@@ -558,24 +609,30 @@ const ChannelInner = (
          *
          * const lastRead = channel.state.read[client.userID as string].last_read;
          */
-        if (channel.countUnread() > 0 && markReadOnMount)
+        if (chatAPI.channel.countUnread({ channel }) > 0 && markReadOnMount)
           markRead({ updateChannelUiUnreadState: false });
+
+        subscriptions.push(
+          chatAPI.client.on(client, 'connection.changed', handleEvent),
+          chatAPI.client.on(client, 'connection.recovered', handleEvent),
+          chatAPI.client.on(client, 'user.updated', handleEvent),
+          chatAPI.client.on(client, 'user.deleted', handleEvent),
+          {
+            unsubscribe: chatAPI.on('all', handleEvent as (event: Event) => void, {
+              client,
+              cid: channel.cid,
+              channelId: channel.id,
+            }),
+          },
+        );
         // The more complex sync logic is done in Chat
-        client.on('connection.changed', handleEvent);
-        client.on('connection.recovered', handleEvent);
-        client.on('user.updated', handleEvent);
-        client.on('user.deleted', handleEvent);
-        channel.on(handleEvent);
       }
     })();
     const notificationTimeoutsRef = notificationTimeouts.current;
 
     return () => {
       if (errored || !done) return;
-      channel?.off(handleEvent);
-      client.off('connection.changed', handleEvent);
-      client.off('connection.recovered', handleEvent);
-      client.off('user.deleted', handleEvent);
+      subscriptions.forEach((subscription) => subscription.unsubscribe());
       notificationTimeoutsRef.forEach(clearTimeout);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -592,7 +649,7 @@ const ChannelInner = (
 
     const message = state.messages?.find((m) => m.id === state.thread?.id);
 
-    if (message) dispatch({ message, type: 'setThread' });
+    if (message) dispatch({ message, type: "setThread" });
   }, [state.messages, state.thread]);
 
   const handleHighlightedMessageChange = useCallback(
@@ -606,17 +663,19 @@ const ChannelInner = (
       dispatch({
         channel,
         highlightedMessageId,
-        type: 'jumpToMessageFinished',
+        type: "jumpToMessageFinished",
       });
       if (clearHighlightedMessageTimeoutId.current) {
         clearTimeout(clearHighlightedMessageTimeoutId.current);
       }
       clearHighlightedMessageTimeoutId.current = setTimeout(() => {
         if (searchController._internalState.getLatestValue().focusedMessage) {
-          searchController._internalState.partialNext({ focusedMessage: undefined });
+          searchController._internalState.partialNext({
+            focusedMessage: undefined,
+          });
         }
         clearHighlightedMessageTimeoutId.current = null;
-        dispatch({ type: 'clearHighlightedMessage' });
+        dispatch({ type: "clearHighlightedMessage" });
       }, highlightDuration ?? DEFAULT_HIGHLIGHT_DURATION);
     },
     [channel, searchController],
@@ -624,7 +683,9 @@ const ChannelInner = (
 
   useEffect(() => {
     if (!jumpToMessageFromSearch?.id) return;
-    handleHighlightedMessageChange({ highlightedMessageId: jumpToMessageFromSearch.id });
+    handleHighlightedMessageChange({
+      highlightedMessageId: jumpToMessageFromSearch.id,
+    });
   }, [jumpToMessageFromSearch, handleHighlightedMessageChange]);
 
   /** MESSAGE */
@@ -638,9 +699,9 @@ const ChannelInner = (
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const loadMoreFinished = useCallback(
     debounce(
-      (hasMore: boolean, messages: ChannelState['messages']) => {
+      (hasMore: boolean, messages: ChannelState["messages"]) => {
         if (!isMounted.current) return;
-        dispatch({ hasMore, messages, type: 'loadMoreFinished' });
+        dispatch({ hasMore, messages, type: "loadMoreFinished" });
       },
       2000,
       { leading: true, trailing: true },
@@ -662,29 +723,32 @@ const ChannelInner = (
     if (
       state.loadingMore ||
       state.loadingMoreNewer ||
-      oldestMessage?.status !== 'received'
+      oldestMessage?.status !== "received"
     ) {
       return 0;
     }
 
-    dispatch({ loadingMore: true, type: 'setLoadingMore' });
+    dispatch({ loadingMore: true, type: "setLoadingMore" });
 
     const oldestID = oldestMessage?.id;
     const perPage = limit;
     let queryResponse: ChannelAPIResponse;
 
     try {
-      queryResponse = await channel.query({
-        messages: { id_lt: oldestID, limit: perPage },
-        watchers: { limit: perPage },
+      queryResponse = await channelQuery(channel, {
+        limit: perPage,
+        id_lt: oldestID,
       });
     } catch (e) {
-      console.warn('message pagination request failed with error', e);
-      dispatch({ loadingMore: false, type: 'setLoadingMore' });
+      console.warn("message pagination request failed with error", e);
+      dispatch({ loadingMore: false, type: "setLoadingMore" });
       return 0;
     }
 
-    loadMoreFinished(channel.state.messagePagination.hasPrev, channel.state.messages);
+    loadMoreFinished(
+      channel.state.messagePagination.hasPrev,
+      channel.state.messages,
+    );
 
     return queryResponse.messages.length;
   };
@@ -700,41 +764,49 @@ const ChannelInner = (
     const newestMessage = state?.messages?.[state?.messages?.length - 1];
     if (state.loadingMore || state.loadingMoreNewer) return 0;
 
-    dispatch({ loadingMoreNewer: true, type: 'setLoadingMoreNewer' });
+    dispatch({ loadingMoreNewer: true, type: "setLoadingMoreNewer" });
 
     const newestId = newestMessage?.id;
     const perPage = limit;
     let queryResponse: ChannelAPIResponse;
 
     try {
-      queryResponse = await channel.query({
-        messages: { id_gt: newestId, limit: perPage },
-        watchers: { limit: perPage },
+      queryResponse = await channelQuery(channel, {
+        limit: perPage,
+        id_gt: newestId,
       });
     } catch (e) {
-      console.warn('message pagination request failed with error', e);
-      dispatch({ loadingMoreNewer: false, type: 'setLoadingMoreNewer' });
+      console.warn("message pagination request failed with error", e);
+      dispatch({ loadingMoreNewer: false, type: "setLoadingMoreNewer" });
       return 0;
     }
 
     dispatch({
       hasMoreNewer: channel.state.messagePagination.hasNext,
       messages: channel.state.messages,
-      type: 'loadMoreNewerFinished',
+      type: "loadMoreNewerFinished",
     });
     return queryResponse.messages.length;
   };
 
-  const jumpToMessage: ChannelActionContextValue['jumpToMessage'] = useCallback(
+  const jumpToMessage: ChannelActionContextValue["jumpToMessage"] = useCallback(
     async (
       messageId,
       messageLimit = DEFAULT_JUMP_TO_PAGE_SIZE,
       highlightDuration = DEFAULT_HIGHLIGHT_DURATION,
     ) => {
-      dispatch({ loadingMore: true, type: 'setLoadingMore' });
-      await channel.state.loadMessageIntoState(messageId, undefined, messageLimit);
+      dispatch({ loadingMore: true, type: "setLoadingMore" });
+      await channelStateLoadMessageIntoState(
+        channel,
+        messageId,
+        undefined,
+        messageLimit,
+      );
 
-      loadMoreFinished(channel.state.messagePagination.hasPrev, channel.state.messages);
+      loadMoreFinished(
+        channel.state.messagePagination.hasPrev,
+        channel.state.messages,
+      );
       handleHighlightedMessageChange({
         highlightDuration,
         highlightedMessageId: messageId,
@@ -743,16 +815,19 @@ const ChannelInner = (
     [channel, handleHighlightedMessageChange, loadMoreFinished],
   );
 
-  const jumpToLatestMessage: ChannelActionContextValue['jumpToLatestMessage'] =
+  const jumpToLatestMessage: ChannelActionContextValue["jumpToLatestMessage"] =
     useCallback(async () => {
-      await channel.state.loadMessageIntoState('latest');
-      loadMoreFinished(channel.state.messagePagination.hasPrev, channel.state.messages);
+      await channelStateLoadMessageIntoState(channel, "latest");
+      loadMoreFinished(
+        channel.state.messagePagination.hasPrev,
+        channel.state.messages,
+      );
       dispatch({
-        type: 'jumpToLatestMessage',
+        type: "jumpToLatestMessage",
       });
     }, [channel, loadMoreFinished]);
 
-  const jumpToFirstUnreadMessage: ChannelActionContextValue['jumpToFirstUnreadMessage'] =
+  const jumpToFirstUnreadMessage: ChannelActionContextValue["jumpToFirstUnreadMessage"] =
     useCallback(
       async (
         queryMessageLimit = DEFAULT_JUMP_TO_PAGE_SIZE,
@@ -760,17 +835,26 @@ const ChannelInner = (
       ) => {
         if (!channelUnreadUiState?.unread_messages) return;
         let lastReadMessageId = channelUnreadUiState?.last_read_message_id;
-        let firstUnreadMessageId = channelUnreadUiState?.first_unread_message_id;
+        let firstUnreadMessageId =
+          channelUnreadUiState?.first_unread_message_id;
         let isInCurrentMessageSet = false;
 
         if (firstUnreadMessageId) {
-          const result = findInMsgSetById(firstUnreadMessageId, channel.state.messages);
+          const result = findInMsgSetById(
+            firstUnreadMessageId,
+            channel.state.messages,
+          );
           isInCurrentMessageSet = result.index !== -1;
         } else if (lastReadMessageId) {
-          const result = findInMsgSetById(lastReadMessageId, channel.state.messages);
+          const result = findInMsgSetById(
+            lastReadMessageId,
+            channel.state.messages,
+          );
           isInCurrentMessageSet = !!result.target;
           firstUnreadMessageId =
-            result.index > -1 ? channel.state.messages[result.index + 1]?.id : undefined;
+            result.index > -1
+              ? channel.state.messages[result.index + 1]?.id
+              : undefined;
         } else {
           const lastReadTimestamp = channelUnreadUiState.last_read.getTime();
           const { index: lastReadMessageIndex, target: lastReadMessage } =
@@ -781,26 +865,22 @@ const ChannelInner = (
             );
 
           if (lastReadMessage) {
-            firstUnreadMessageId = channel.state.messages[lastReadMessageIndex + 1]?.id;
+            firstUnreadMessageId =
+              channel.state.messages[lastReadMessageIndex + 1]?.id;
             isInCurrentMessageSet = !!firstUnreadMessageId;
             lastReadMessageId = lastReadMessage.id;
           } else {
-            dispatch({ loadingMore: true, type: 'setLoadingMore' });
+            dispatch({ loadingMore: true, type: "setLoadingMore" });
             let messages;
             try {
               messages = (
-                await channel.query(
-                  {
-                    messages: {
-                      created_at_around: channelUnreadUiState.last_read.toISOString(),
-                      limit: queryMessageLimit,
-                    },
-                  },
-                  'new',
-                )
+                await channelQuery(channel, { limit: queryMessageLimit })
               ).messages;
             } catch (e) {
-              addNotification(t('Failed to jump to the first unread message'), 'error');
+              addNotification(
+                t("Failed to jump to the first unread message"),
+                "error",
+              );
               loadMoreFinished(
                 channel.state.messagePagination.hasPrev,
                 channel.state.messages,
@@ -808,9 +888,14 @@ const ChannelInner = (
               return;
             }
 
-            const firstMessageWithCreationDate = messages.find((msg) => msg.created_at);
+            const firstMessageWithCreationDate = messages.find(
+              (msg) => msg.created_at,
+            );
             if (!firstMessageWithCreationDate) {
-              addNotification(t('Failed to jump to the first unread message'), 'error');
+              addNotification(
+                t("Failed to jump to the first unread message"),
+                "error",
+              );
               loadMoreFinished(
                 channel.state.messagePagination.hasPrev,
                 channel.state.messages,
@@ -824,7 +909,10 @@ const ChannelInner = (
               // whole channel is unread
               firstUnreadMessageId = firstMessageWithCreationDate.id;
             } else {
-              const result = findInMsgSetByDate(channelUnreadUiState.last_read, messages);
+              const result = findInMsgSetByDate(
+                channelUnreadUiState.last_read,
+                messages,
+              );
               lastReadMessageId = result.target?.id;
             }
             loadMoreFinished(
@@ -835,15 +923,20 @@ const ChannelInner = (
         }
 
         if (!firstUnreadMessageId && !lastReadMessageId) {
-          addNotification(t('Failed to jump to the first unread message'), 'error');
+          addNotification(
+            t("Failed to jump to the first unread message"),
+            "error",
+          );
           return;
         }
 
         if (!isInCurrentMessageSet) {
-          dispatch({ loadingMore: true, type: 'setLoadingMore' });
+          dispatch({ loadingMore: true, type: "setLoadingMore" });
           try {
-            const targetId = (firstUnreadMessageId ?? lastReadMessageId) as string;
-            await channel.state.loadMessageIntoState(
+            const targetId = (firstUnreadMessageId ??
+              lastReadMessageId) as string;
+            await channelStateLoadMessageIntoState(
+              channel,
               targetId,
               undefined,
               queryMessageLimit,
@@ -860,9 +953,13 @@ const ChannelInner = (
               channel.state.messages,
             );
             firstUnreadMessageId =
-              firstUnreadMessageId ?? channel.state.messages[indexOfTarget + 1]?.id;
+              firstUnreadMessageId ??
+              channel.state.messages[indexOfTarget + 1]?.id;
           } catch (e) {
-            addNotification(t('Failed to jump to the first unread message'), 'error');
+            addNotification(
+              t("Failed to jump to the first unread message"),
+              "error",
+            );
             loadMoreFinished(
               channel.state.messagePagination.hasPrev,
               channel.state.messages,
@@ -872,7 +969,10 @@ const ChannelInner = (
         }
 
         if (!firstUnreadMessageId) {
-          addNotification(t('Failed to jump to the first unread message'), 'error');
+          addNotification(
+            t("Failed to jump to the first unread message"),
+            "error",
+          );
           return;
         }
         if (!channelUnreadUiState.first_unread_message_id)
@@ -896,32 +996,42 @@ const ChannelInner = (
       ],
     );
 
+  /** Custom action handler to delete a message via the backend */
   const deleteMessage = useCallback(
     async (message: LocalMessage): Promise<MessageResponse> => {
       if (!message?.id) {
-        throw new Error('Cannot delete a message - missing message ID.');
+        throw new Error("Cannot delete a message - missing message ID.");
       }
-      let deletedMessage;
-      if (doDeleteMessageRequest) {
-        deletedMessage = await doDeleteMessageRequest(message);
-      } else {
-        const result = await client.deleteMessage(message.id);
-        deletedMessage = result.message;
+      if (!channel?.cid) {
+        throw new Error("Cannot delete a message - missing channel CID.");
       }
 
-      return deletedMessage;
+      if (doDeleteMessageRequest) {
+        return await doDeleteMessageRequest(message);
+      }
+
+      const messageId = Number(message.id);
+      if (Number.isNaN(messageId)) {
+        throw new Error(
+          `Cannot delete a message - invalid message ID "${message.id}".`,
+        );
+      }
+
+      await chatAPI.deleteMessage({ cid: channel.cid, message_id: messageId });
+
+      const deletedAt = new Date().toISOString();
+      return { ...message, deleted_at: deletedAt } as MessageResponse;
     },
-    [client, doDeleteMessageRequest],
+    [channel, doDeleteMessageRequest],
   );
 
   const updateMessage = (updatedMessage: MessageResponse | LocalMessage) => {
-    // add the message to the local channel state
-    channel.state.addMessageSorted(updatedMessage, true);
+    void loadMessageIntoChannelState(channel, updatedMessage);
 
     dispatch({
       channel,
       parentId: state.thread && updatedMessage.parent_id,
-      type: 'copyMessagesFromChannel',
+      type: "copyMessagesFromChannel",
     });
   };
 
@@ -955,7 +1065,8 @@ const ChannelInner = (
       const responseTimestamp = new Date(
         messageResponse?.message?.updated_at || 0,
       ).getTime();
-      const existingMessageTimestamp = existingMessage?.updated_at?.getTime() || 0;
+      const existingMessageTimestamp =
+        existingMessage?.updated_at?.getTime() || 0;
       const responseIsTheNewest = responseTimestamp > existingMessageTimestamp;
 
       // Replace the message payload after send is completed
@@ -963,11 +1074,11 @@ const ChannelInner = (
       // Always override existing message in status "sending"
       if (
         messageResponse?.message &&
-        (responseIsTheNewest || existingMessage?.status === 'sending')
+        (responseIsTheNewest || existingMessage?.status === "sending")
       ) {
         updateMessage({
           ...messageResponse.message,
-          status: 'received',
+          status: "received",
         });
       }
     } catch (error) {
@@ -987,24 +1098,24 @@ const ChannelInner = (
       if (
         parsedError.code === 4 &&
         error instanceof Error &&
-        error.message.includes('already exists')
+        error.message.includes("already exists")
       ) {
         updateMessage({
           ...localMessage,
-          status: 'received',
+          status: "received",
         });
       } else {
         updateMessage({
           ...localMessage,
           error: parsedError,
-          status: 'failed',
+          status: "failed",
         });
 
         thread?.upsertReplyLocally({
           message: {
             ...localMessage,
             error: parsedError,
-            status: 'failed',
+            status: "failed",
           },
         });
       }
@@ -1035,7 +1146,7 @@ const ChannelInner = (
     updateMessage({
       ...localMessage,
       error: undefined,
-      status: 'sending',
+      status: "sending",
     });
 
     await doSendMessage({
@@ -1050,20 +1161,23 @@ const ChannelInner = (
     dispatch({
       channel,
       parentId: state.thread && message.parent_id,
-      type: 'copyMessagesFromChannel',
+      type: "copyMessagesFromChannel",
     });
   };
 
   /** THREAD */
 
-  const openThread = (message: LocalMessage, event?: React.BaseSyntheticEvent) => {
+  const openThread = (
+    message: LocalMessage,
+    event?: React.BaseSyntheticEvent,
+  ) => {
     event?.preventDefault();
-    dispatch({ channel, message, type: 'openThread' });
+    dispatch({ channel, message, type: "openThread" });
   };
 
   const closeThread = (event?: React.BaseSyntheticEvent) => {
     event?.preventDefault();
-    dispatch({ type: 'closeThread' });
+    dispatch({ type: "closeThread" });
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1071,12 +1185,12 @@ const ChannelInner = (
     debounce(
       (
         threadHasMore: boolean,
-        threadMessages: Array<ReturnType<ChannelState['formatMessage']>>,
+        threadMessages: Array<ReturnType<ChannelState["formatMessage"]>>,
       ) => {
         dispatch({
           threadHasMore,
           threadMessages,
-          type: 'loadMoreThreadFinished',
+          type: "loadMoreThreadFinished",
         });
       },
       2000,
@@ -1087,22 +1201,23 @@ const ChannelInner = (
 
   const loadMoreThread = async (limit: number = DEFAULT_THREAD_PAGE_SIZE) => {
     // FIXME: should prevent loading more, if state.thread.reply_count === channel.state.threads[parentID].length
-    if (state.threadLoadingMore || !state.thread || !state.threadHasMore) return;
+    if (state.threadLoadingMore || !state.thread || !state.threadHasMore)
+      return;
 
-    dispatch({ type: 'startLoadingThread' });
+    dispatch({ type: "startLoadingThread" });
     const parentId = state.thread.id;
 
     if (!parentId) {
-      return dispatch({ type: 'closeThread' });
+      return dispatch({ type: "closeThread" });
     }
 
     const oldMessages = channel.state.threads[parentId] || [];
     const oldestMessageId = oldMessages[0]?.id;
 
     try {
-      const queryResponse = await channel.getReplies(parentId, {
-        id_lt: oldestMessageId,
+      const queryResponse = await channelGetReplies(channel, parentId, {
         limit,
+        id_lt: oldestMessageId,
       });
 
       const threadHasMoreMessages = hasMoreMessagesProbably(
@@ -1118,19 +1233,37 @@ const ChannelInner = (
     }
   };
 
-  const onMentionsHoverOrClick = useMentionsHandlers(onMentionsHover, onMentionsClick);
+  const onMentionsHoverOrClick = useMentionsHandlers(
+    onMentionsHover,
+    onMentionsClick,
+  );
 
   const editMessage = useEditMessageHandler(doUpdateMessageRequest);
 
   const { typing, ...restState } = state;
 
+  const typingUsers = useMemo(
+    () =>
+      Object.values(typing || {})
+        .map(({ parent_id, user }) => ({
+          id: user?.id ?? '',
+          name: user?.name,
+          parent_id,
+          role: user?.role,
+        }))
+        .filter((entry) => entry.id && entry.id !== client.userID),
+    [client.userID, typing],
+  );
+
   const channelStateContextValue = useCreateChannelStateContext({
     ...restState,
+    typing,
+    typingUsers,
     channel,
     channelCapabilitiesArray,
     channelConfig,
     channelUnreadUiState,
-    giphyVersion: props.giphyVersion || 'fixed_height',
+    giphyVersion: props.giphyVersion || "fixed_height",
     imageAttachmentSizeHandler:
       props.imageAttachmentSizeHandler || getImageAttachmentConfiguration,
     mutes,
@@ -1318,6 +1451,7 @@ const ChannelInner = (
 
   const typingContextValue = useCreateTypingContext({
     typing,
+    typingUsers,
   });
 
   if (state.error) {
@@ -1339,7 +1473,7 @@ const ChannelInner = (
   if (!channel.watch) {
     return (
       <ChannelContainer>
-        <div>{t('Channel Missing')}</div>
+        <div>{t("Channel Missing")}</div>
       </ChannelContainer>
     );
   }
@@ -1367,4 +1501,6 @@ const ChannelInner = (
  * - [ComponentContext](https://getstream.io/chat/docs/sdk/react/contexts/component_context/)
  * - [TypingContext](https://getstream.io/chat/docs/sdk/react/contexts/typing_context/)
  */
-export const Channel = React.memo(UnMemoizedChannel) as typeof UnMemoizedChannel;
+export const Channel = React.memo(
+  UnMemoizedChannel,
+) as typeof UnMemoizedChannel;

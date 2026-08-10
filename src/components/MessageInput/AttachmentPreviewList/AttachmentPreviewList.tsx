@@ -8,7 +8,7 @@ import {
   isLocalVideoAttachment,
   isLocalVoiceRecordingAttachment,
   isScrapedContent,
-} from 'stream-chat';
+} from 'chat-shim';
 import type { UnsupportedAttachmentPreviewProps } from './UnsupportedAttachmentPreview';
 import { UnsupportedAttachmentPreview as DefaultUnknownAttachmentPreview } from './UnsupportedAttachmentPreview';
 import { VoiceRecordingPreview as DefaultVoiceRecordingPreview } from './VoiceRecordingPreview';

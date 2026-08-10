@@ -2,7 +2,7 @@ import type React from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
 import { useMessageListScrollManager } from './useMessageListScrollManager';
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 
 export type UseScrollLocationLogicParams = {
   hasMoreNewer: boolean;

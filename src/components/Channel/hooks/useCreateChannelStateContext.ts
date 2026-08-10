@@ -1,8 +1,12 @@
 import { useMemo } from 'react';
 
 import { isDate, isDayOrMoment } from '../../../i18n';
+import { chatAPI } from '../../../api/chatAPI';
 
-import type { ChannelStateContextValue } from '../../../context/ChannelStateContext';
+import type {
+  ChannelStateContextValue,
+  TypingUser,
+} from '../../../context/ChannelStateContext';
 
 export const useCreateChannelStateContext = (
   value: Omit<ChannelStateContextValue, 'channelCapabilities'> & {
@@ -29,6 +33,7 @@ export const useCreateChannelStateContext = (
     notifications,
     pinnedMessages,
     read = {},
+    typing = {},
     shouldGenerateVideoThumbnail,
     skipMessageDataMemoization,
     suppressAutoscroll,
@@ -43,7 +48,8 @@ export const useCreateChannelStateContext = (
   } = value;
 
   const channelId = channel.cid;
-  const lastRead = channel.initialized && channel.lastRead()?.getTime();
+  const lastReadDate = channel.initialized ? chatAPI.lastRead({ channel }) : undefined;
+  const lastRead = lastReadDate?.getTime();
   const membersLength = Object.keys(members || []).length;
   const notificationsLength = notifications.length;
   const readUsers = Object.values(read);
@@ -52,6 +58,17 @@ export const useCreateChannelStateContext = (
     .map(({ last_read }) => last_read.toISOString())
     .join();
   const threadMessagesLength = threadMessages?.length;
+  const clientUser = channel.getClient();
+  const currentUserId = clientUser?.user?.id ?? (clientUser as any)?._user?.id;
+  const typingUsers: TypingUser[] = Object.values(typing || {})
+    .map(({ parent_id, user }) => ({
+      id: user?.id ?? '',
+      name: user?.name,
+      parent_id,
+      role: user?.role,
+    }))
+    .filter((entry) => entry.id && entry.id !== currentUserId);
+  const typingUsersKey = typingUsers.map(({ id, parent_id }) => `${id}:${parent_id ?? ''}`).join();
 
   const channelCapabilities: Record<string, boolean> = {};
 
@@ -115,6 +132,8 @@ export const useCreateChannelStateContext = (
       notifications,
       pinnedMessages,
       read,
+      typing,
+      typingUsers,
       shouldGenerateVideoThumbnail,
       suppressAutoscroll,
       thread,
@@ -151,6 +170,7 @@ export const useCreateChannelStateContext = (
       threadHasMore,
       threadLoadingMore,
       threadMessagesLength,
+      typingUsersKey,
       watcherCount,
     ],
   );

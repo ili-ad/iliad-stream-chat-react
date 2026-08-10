@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslationContext } from '../../context';
 import { useStateStore } from '../../store';
-import type { Reminder, ReminderState } from 'stream-chat';
+import type { Reminder, ReminderState } from 'chat-shim';
 
 export type ReminderNotificationProps = {
   reminder?: Reminder;

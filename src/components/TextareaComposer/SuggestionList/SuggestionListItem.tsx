@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import type { Ref } from 'react';
 import React, { useCallback, useLayoutEffect, useRef } from 'react';
 import { useMessageComposer } from '../../MessageInput';
-import type { TextComposerSuggestion } from 'stream-chat';
+import type { TextComposerSuggestion } from 'chat-shim';
 import type { UserItemProps } from './UserItem';
 import type { CommandItemProps } from './CommandItem';
 import type { EmoticonItemProps } from './EmoticonItem';

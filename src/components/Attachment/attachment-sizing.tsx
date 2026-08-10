@@ -1,4 +1,4 @@
-import type { Attachment } from 'stream-chat';
+import type { Attachment } from 'chat-shim';
 import * as linkify from 'linkifyjs';
 
 export const getImageAttachmentConfiguration = (

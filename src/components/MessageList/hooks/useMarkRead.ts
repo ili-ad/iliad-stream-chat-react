@@ -4,12 +4,31 @@ import {
   useChannelStateContext,
   useChatContext,
 } from '../../../context';
-import type { Channel, Event, LocalMessage, MessageResponse } from 'stream-chat';
+import type { Channel, Event, LocalMessage, MessageResponse } from 'chat-shim';
 
+// const hasReadLastMessage = (channel: Channel, userId: string) => {
+//   const latestMessageIdInChannel = channel.state.latestMessages.slice(-1)[0]?.id;
+//   const lastReadMessageIdServer = channel.state.read[userId]?.last_read_message_id;
+//   return latestMessageIdInChannel === lastReadMessageIdServer;
+// };
+
+
+/* ------------------------------------------------------------------ *
+ * SAFER helper: tolerate shims that don’t populate `state` up-front  *
+ * ------------------------------------------------------------------ */
 const hasReadLastMessage = (channel: Channel, userId: string) => {
-  const latestMessageIdInChannel = channel.state.latestMessages.slice(-1)[0]?.id;
-  const lastReadMessageIdServer = channel.state.read[userId]?.last_read_message_id;
-  return latestMessageIdInChannel === lastReadMessageIdServer;
+  // guard: state object may be missing in lightweight shims
+  const state: any = channel?.state ?? {};
+
+  // guard: latestMessages may be absent → fall back to empty array
+  const latest = (state.latestMessages ?? []) as any[];
+  const latestMessageId = latest.slice(-1)[0]?.id;
+
+  // guard: read-map or entry may be absent
+  const readMap = state.read ?? {};
+  const lastReadMessageIdServer = readMap[userId]?.last_read_message_id;
+
+  return latestMessageId === lastReadMessageIdServer;
 };
 
 type UseMarkReadParams = {
@@ -75,7 +94,6 @@ export const useMarkRead = ({
       }
     };
 
-    channel.on('message.new', handleMessageNew);
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     if (shouldMarkRead()) {
@@ -83,7 +101,6 @@ export const useMarkRead = ({
     }
 
     return () => {
-      channel.off('message.new', handleMessageNew);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [

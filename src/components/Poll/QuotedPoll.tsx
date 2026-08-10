@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { usePollContext } from '../../context';
 import { useStateStore } from '../../store';
-import type { PollState } from 'stream-chat';
+import type { PollState } from 'chat-shim';
 
 type PollStateSelectorQuotedPollReturnValue = {
   is_closed: boolean | undefined;

@@ -12,7 +12,7 @@ import {
 import { renderText as defaultRenderText } from './renderText';
 import { MessageErrorText } from './MessageErrorText';
 
-import type { LocalMessage, TranslationLanguages } from 'stream-chat';
+import type { LocalMessage, TranslationLanguages } from 'chat-shim';
 import type { MessageContextValue } from '../../context';
 
 export type MessageTextProps = {

@@ -7,7 +7,7 @@ import type {
   ReactionResponse,
   ReactionSort,
   UserResponse,
-} from 'stream-chat';
+} from 'chat-shim';
 
 import type { ChannelActionContextValue } from './ChannelActionContext';
 

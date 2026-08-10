@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { isVoteAnswer } from 'stream-chat';
+import { isVoteAnswer } from 'chat-shim';
 import { useChatContext } from '../../../context';
-import type { Event, PollAnswer, PollVote } from 'stream-chat';
+import type { Event, PollAnswer, PollVote } from 'chat-shim';
+import { chatAPI } from '../../../api/chatAPI';
 
 import type { CursorPaginatorStateStore } from '../../InfiniteScrollPaginator/hooks/useCursorPaginator';
 
@@ -10,7 +11,7 @@ export function useManagePollVotesRealtime<T extends PollVote | PollAnswer = Pol
   cursorPaginatorState?: CursorPaginatorStateStore<T>,
   optionId?: string,
 ) {
-  const { client } = useChatContext();
+  const { client, channel } = useChatContext();
   const [votesInRealtime, setVotesInRealtime] = useState<T[]>(
     cursorPaginatorState?.getLatestValue().items ?? [],
   );
@@ -57,16 +58,27 @@ export function useManagePollVotesRealtime<T extends PollVote | PollAnswer = Pol
       }
     };
 
-    const voteCastedSubscription = client.on('poll.vote_casted', handleVoteEvent);
-    const voteRemovedSubscription = client.on('poll.vote_removed', handleVoteEvent);
-    const voteChangedSubscription = client.on('poll.vote_changed', handleVoteEvent);
+    const voteCastedSubscription = chatAPI.onPollVoteCasted({
+      channel,
+      handler: handleVoteEvent,
+    });
+    const voteRemovedSubscription = chatAPI.onPollVoteRemoved({
+      channel,
+      client,
+      handler: handleVoteEvent,
+    });
+    const voteChangedSubscription = chatAPI.onPollVoteChanged({
+      channel,
+      client,
+      handler: handleVoteEvent,
+    });
 
     return () => {
       voteCastedSubscription.unsubscribe();
       voteRemovedSubscription.unsubscribe();
       voteChangedSubscription.unsubscribe();
     };
-  }, [client, optionId, managedVoteType]);
+  }, [channel?.cid, client, optionId, managedVoteType]);
 
   return votesInRealtime;
 }

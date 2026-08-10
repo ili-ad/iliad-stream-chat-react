@@ -8,7 +8,7 @@ import type {
   SendMessageOptions,
   UpdateMessageAPIResponse,
   UpdateMessageOptions,
-} from 'stream-chat';
+} from 'chat-shim';
 
 import type { ChannelStateReducerAction } from '../components/Channel/channelState';
 import type { CustomMentionHandler } from '../components/Message/hooks/useMentionsHandler';

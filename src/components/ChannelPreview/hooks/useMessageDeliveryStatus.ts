@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Channel, Event, LocalMessage, UserResponse } from 'stream-chat';
+import type { Channel, Event, LocalMessage, UserResponse } from 'chat-shim';
 
 import { useChatContext } from '../../../context';
 
@@ -62,10 +62,8 @@ export const useMessageDeliveryStatus = ({
       return setMessageDeliveryStatus(MessageDeliveryStatus.DELIVERED);
     };
 
-    channel.on('message.new', handleMessageNew);
 
     return () => {
-      channel.off('message.new', handleMessageNew);
     };
   }, [channel, client, isOwnMessage]);
 
@@ -75,10 +73,8 @@ export const useMessageDeliveryStatus = ({
       if (event.user?.id !== client.user?.id)
         setMessageDeliveryStatus(MessageDeliveryStatus.READ);
     };
-    channel.on('message.read', handleMarkRead);
 
     return () => {
-      channel.off('message.read', handleMarkRead);
     };
   }, [channel, client, lastMessage, isOwnMessage]);
 

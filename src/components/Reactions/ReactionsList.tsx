@@ -9,7 +9,7 @@ import { useComponentContext, useTranslationContext } from '../../context';
 
 import { MAX_MESSAGE_REACTIONS_TO_FETCH } from '../Message/hooks';
 
-import type { ReactionGroupResponse, ReactionResponse } from 'stream-chat';
+import type { ReactionGroupResponse, ReactionResponse } from 'chat-shim';
 import type { ReactionOptions } from './reactionOptions';
 import type {
   ReactionDetailsComparator,

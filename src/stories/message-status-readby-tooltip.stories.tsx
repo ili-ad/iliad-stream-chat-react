@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import type { ChannelSort } from 'stream-chat';
+import type { ChannelSort } from 'chat-shim';
 
 import {
   Channel,

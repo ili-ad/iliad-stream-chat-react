@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 
 import { useChatContext } from '../../../context/ChatContext';
+import { chatAPI } from '../../../api/chatAPI';
 
-import type { Channel, Event } from 'stream-chat';
+import type { Channel, Event } from 'chat-shim';
 
 export const useChannelTruncatedListener = (
   setChannels: React.Dispatch<React.SetStateAction<Array<Channel>>>,
@@ -26,10 +27,14 @@ export const useChannelTruncatedListener = (
       }
     };
 
-    client.on('channel.truncated', handleEvent);
+    const subscription = chatAPI.client.on(
+      client,
+      'channel.truncated',
+      handleEvent,
+    );
 
     return () => {
-      client.off('channel.truncated', handleEvent);
+      subscription.unsubscribe();
     };
   }, [client, customHandler, forceUpdate, setChannels]);
 };

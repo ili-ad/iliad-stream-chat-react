@@ -10,7 +10,7 @@ import { LoadingIndicator } from '../Loading';
 import { Avatar } from '../Avatar';
 import type { MessageContextValue } from '../../context';
 import { useMessageContext } from '../../context';
-import type { ReactionSort } from 'stream-chat';
+import type { ReactionSort } from 'chat-shim';
 
 export type ReactionsListModalProps = ModalProps &
   Partial<Pick<MessageContextValue, 'handleFetchReactions' | 'reactionDetailsSort'>> & {

@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import type { Dispatch, SetStateAction } from 'react';
-import type { ChannelState, MessageResponse, StreamChat } from 'stream-chat';
+import type { ChannelState, MessageResponse, StreamChat } from 'chat-shim';
 import type { ChannelNotifications } from '../../context/ChannelStateContext';
 
 export const makeAddNotifications =
@@ -99,5 +99,12 @@ export const findInMsgSetByDate = (
   return { index: -1 };
 };
 
-export const generateMessageId = ({ client }: { client: StreamChat }) =>
-  `${client.userID}-${nanoid()}`;
+const getClientUserId = (client: StreamChat): string | undefined => {
+  void client;
+  return undefined;
+};
+
+export const generateMessageId = ({ client }: { client: StreamChat }) => {
+  const userId = getClientUserId(client);
+  return userId ? `${userId}-${nanoid()}` : nanoid();
+};

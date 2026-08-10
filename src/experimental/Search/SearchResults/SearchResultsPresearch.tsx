@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useTranslationContext } from '../../../context';
 
-import type { SearchSource } from 'stream-chat';
+import type { SearchSource } from 'chat-shim';
 
 export type SearchResultsPresearchProps = {
   activeSources: SearchSource[];

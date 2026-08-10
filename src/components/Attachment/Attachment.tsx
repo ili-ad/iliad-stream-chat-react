@@ -6,7 +6,7 @@ import {
   isScrapedContent,
   isVideoAttachment,
   isVoiceRecordingAttachment,
-} from 'stream-chat';
+} from 'chat-shim';
 
 import {
   AudioContainer,
@@ -21,7 +21,7 @@ import {
 import { SUPPORTED_VIDEO_FORMATS } from './utils';
 
 import type { ReactPlayerProps } from 'react-player';
-import type { Attachment as StreamAttachment } from 'stream-chat';
+import type { Attachment as StreamAttachment } from 'chat-shim';
 import type { AttachmentActionsProps } from './AttachmentActions';
 import type { AudioProps } from './Audio';
 import type { VoiceRecordingProps } from './VoiceRecording';

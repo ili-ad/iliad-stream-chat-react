@@ -4,7 +4,7 @@ import { RecordingTimer } from '../../MediaRecorder';
 import { CloseIcon, LoadingIndicatorIcon, RetryIcon } from '../icons';
 import { FileIcon } from '../../ReactFileUtilities';
 import { useAudioController } from '../../Attachment/hooks/useAudioController';
-import type { LocalVoiceRecordingAttachment } from 'stream-chat';
+import type { LocalVoiceRecordingAttachment } from 'chat-shim';
 import type { UploadAttachmentPreviewProps } from './types';
 import { useTranslationContext } from '../../../context';
 

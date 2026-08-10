@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import type { Channel, Event } from 'stream-chat';
+import type { Channel, Event } from 'chat-shim';
 
 import { useChatContext } from '../../../context/ChatContext';
+import { chatAPI } from '../../../api/chatAPI';
 
 export const useChannelDeletedListener = (
   setChannels: React.Dispatch<React.SetStateAction<Array<Channel>>>,
@@ -30,10 +31,14 @@ export const useChannelDeletedListener = (
       }
     };
 
-    client.on('channel.deleted', handleEvent);
+    const subscription = chatAPI.client.on(
+      client,
+      'channel.deleted',
+      handleEvent,
+    );
 
     return () => {
-      client.off('channel.deleted', handleEvent);
+      subscription.unsubscribe();
     };
   }, [client, customHandler, setChannels]);
 };

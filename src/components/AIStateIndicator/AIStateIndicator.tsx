@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Channel } from 'stream-chat';
+import type { Channel } from 'chat-shim';
 
 import { AIStates, useAIState } from './hooks/useAIState';
 

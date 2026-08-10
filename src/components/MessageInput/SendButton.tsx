@@ -1,7 +1,7 @@
 import React from 'react';
 import { SendIcon } from './icons';
 import { useMessageComposerHasSendableData } from './hooks';
-import type { UpdatedMessage } from 'stream-chat';
+import type { UpdatedMessage } from 'chat-shim';
 
 export type SendButtonProps = {
   sendMessage: (

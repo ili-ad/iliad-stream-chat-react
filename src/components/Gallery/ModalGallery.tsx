@@ -4,7 +4,7 @@ import ImageGallery from 'react-image-gallery';
 import { BaseImage } from './BaseImage';
 import { useTranslationContext } from '../../context';
 
-import type { Attachment } from 'stream-chat';
+import type { Attachment } from 'chat-shim';
 
 export type ModalGalleryProps = {
   /** The images for the Carousel component */

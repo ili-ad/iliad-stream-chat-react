@@ -4,7 +4,7 @@ import { PollOptionList } from '../PollOptionList';
 import { useStateStore } from '../../../store';
 import { usePollContext, useTranslationContext } from '../../../context';
 
-import type { PollState } from 'stream-chat';
+import type { PollState } from 'chat-shim';
 
 type PollStateSelectorReturnValue = { name: string };
 const pollStateSelector = (nextValue: PollState): PollStateSelectorReturnValue => ({

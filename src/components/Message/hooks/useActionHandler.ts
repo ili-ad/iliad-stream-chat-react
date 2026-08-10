@@ -1,8 +1,9 @@
 import { useChannelActionContext } from '../../../context/ChannelActionContext';
 import { useChannelStateContext } from '../../../context/ChannelStateContext';
+import { chatAPI } from '../../../api/chatAPI';
 
 import type React from 'react';
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 
 export type FormData = Record<string, string>;
 
@@ -27,7 +28,8 @@ export function useActionHandler(message?: LocalMessage): ActionHandlerReturnTyp
       return;
     }
 
-    const messageID = message.id;
+    const messageID =
+      message.id !== undefined && message.id !== null ? String(message.id) : '';
     let formData: FormData = {};
 
     // deprecated: value&name should be removed in favor of data obj
@@ -38,7 +40,7 @@ export function useActionHandler(message?: LocalMessage): ActionHandlerReturnTyp
     }
 
     if (messageID) {
-      const data = await channel.sendAction(messageID, formData);
+      const data = await chatAPI.sendAction(messageID, formData, { channel });
 
       if (data?.message) {
         updateMessage(data.message);

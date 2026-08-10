@@ -1,6 +1,6 @@
 import { useMessageComposer } from './hooks';
 import React from 'react';
-import type { MessageComposerState } from 'stream-chat';
+import type { MessageComposerState } from 'chat-shim';
 import { useStateStore } from '../../store';
 import { useTranslationContext } from '../../context';
 

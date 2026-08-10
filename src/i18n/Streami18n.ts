@@ -13,7 +13,7 @@ import { defaultTranslatorFunction, predefinedFormatters } from './utils';
 
 import type { TFunction } from 'i18next';
 import type momentTimezone from 'moment-timezone';
-import type { TranslationLanguages } from 'stream-chat';
+import type { TranslationLanguages } from 'chat-shim';
 
 import type { TranslationTopicConstructor } from './TranslationBuilder';
 import type { UnknownType } from '../types/types';

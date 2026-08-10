@@ -10,7 +10,7 @@ import { ModalGallery as DefaultModalGallery } from './ModalGallery';
 import { useComponentContext } from '../../context/ComponentContext';
 import { useTranslationContext } from '../../context/TranslationContext';
 
-import type { Attachment } from 'stream-chat';
+import type { Attachment } from 'chat-shim';
 
 export type GalleryProps = {
   images: ((

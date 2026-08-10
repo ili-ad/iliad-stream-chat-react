@@ -5,7 +5,7 @@ import { DateSeparator as DefaultDateSeparator } from '../DateSeparator';
 import { EventComponent as DefaultMessageSystem } from '../EventComponent';
 import { UnreadMessagesSeparator as DefaultUnreadMessagesSeparator } from './UnreadMessagesSeparator';
 import type { ReactNode } from 'react';
-import type { UserResponse } from 'stream-chat';
+import type { UserResponse } from 'chat-shim';
 import type { GroupStyle, RenderedMessage } from './utils';
 import type { MessageProps } from '../Message';
 import type { ComponentContextValue, CustomClasses } from '../../context';

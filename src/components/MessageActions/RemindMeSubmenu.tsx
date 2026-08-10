@@ -1,5 +1,6 @@
 import React from 'react';
 import { useChatContext, useMessageContext, useTranslationContext } from '../../context';
+import { chatAPI, type CreateReminderInput } from '../../api/chatAPI';
 import { ButtonWithSubmenu } from '../Dialog';
 import type { ComponentProps } from 'react';
 
@@ -23,22 +24,39 @@ export const RemindMeActionButton = ({
 
 export const RemindMeSubmenu = () => {
   const { t } = useTranslationContext();
-  const { client } = useChatContext();
+  const { client, channel } = useChatContext();
   const { message } = useMessageContext();
+  const scheduledOffsetsMs = chatAPI.reminders.scheduledOffsetsMs({ client });
+  const cid = channel?.cid ?? (message.cid as string | undefined);
   return (
     <div
       aria-label={t('aria/Remind Me Options')}
       className='str-chat__message-actions-box__submenu'
       role='listbox'
     >
-      {client.reminders.scheduledOffsetsMs.map((offsetMs) => (
+      {scheduledOffsetsMs.map((offsetMs) => (
         <button
           className='str-chat__message-actions-list-item-button'
           key={`reminder-offset-option--${offsetMs}`}
           onClick={() => {
-            client.reminders.upsertReminder({
-              messageId: message.id,
-              remind_at: new Date(new Date().getTime() + offsetMs).toISOString(),
+            if (!cid) return;
+            const remindAt = new Date(Date.now() + offsetMs).toISOString();
+            const rawMessageId =
+              typeof message.id === 'number'
+                ? message.id
+                : typeof message.id === 'string'
+                ? Number.parseInt(message.id, 10)
+                : undefined;
+            const reminderInput: CreateReminderInput = {
+              cid,
+              remind_at: remindAt,
+            };
+            if (typeof rawMessageId === 'number' && !Number.isNaN(rawMessageId)) {
+              reminderInput.message_id = rawMessageId;
+            }
+            void chatAPI.reminders.upsertReminder({
+              client,
+              reminder: reminderInput,
             });
           }}
         >

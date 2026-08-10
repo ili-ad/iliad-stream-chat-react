@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 import type { CustomMessageActions } from '../../context/MessageContext';
 
 export type CustomMessageActionsListProps = {

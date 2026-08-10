@@ -3,7 +3,8 @@ import type {
   ChannelQueryOptions,
   QueryChannelAPIResponse,
   StreamChat,
-} from 'stream-chat';
+} from 'chat-shim';
+import { channelWatch, type ChannelWatchOptions } from '../chatSDKShim';
 
 /**
  * prevent from duplicate invocation of channel.watch()
@@ -43,9 +44,17 @@ export const getChannel = async ({
     throw new Error('Channel or channel type have to be provided to query a channel.');
   }
 
-  // unfortunately typescript is not able to infer that if (!channel && !type) === false, then channel or type has to be truthy
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const theChannel = channel || client.channel(type!, id, { members });
+  if (!channel) {
+    const extra = members && members.length ? { members } : undefined;
+    /* TODO backend-wire-up:client.channel */
+    void client;
+    void extra;
+    void id;
+    void type;
+    return {} as Channel;
+  }
+
+  const theChannel = channel;
 
   // need to keep as with call to channel.watch the id can be changed from undefined to an actual ID generated server-side
   const originalCid = theChannel?.id
@@ -66,7 +75,11 @@ export const getChannel = async ({
     await queryPromise;
   } else {
     try {
-      WATCH_QUERY_IN_PROGRESS_FOR_CHANNEL[originalCid] = theChannel.watch(options);
+      const watchOptions = options as ChannelWatchOptions | undefined;
+      WATCH_QUERY_IN_PROGRESS_FOR_CHANNEL[originalCid] = channelWatch(
+        theChannel,
+        watchOptions,
+      );
       await WATCH_QUERY_IN_PROGRESS_FOR_CHANNEL[originalCid];
     } finally {
       delete WATCH_QUERY_IN_PROGRESS_FOR_CHANNEL[originalCid];

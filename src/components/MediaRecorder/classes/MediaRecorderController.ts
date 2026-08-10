@@ -17,7 +17,7 @@ import {
 } from '../../ReactFileUtilities';
 import { defaultTranslatorFunction } from '../../../i18n';
 import { mergeDeepUndefined } from '../../../utils/mergeDeep';
-import type { LocalVoiceRecordingAttachment } from 'stream-chat';
+import type { LocalVoiceRecordingAttachment } from 'chat-shim';
 import type { AmplitudeRecorderConfig } from './AmplitudeRecorder';
 import type { TranslationContextValue } from '../../../context';
 

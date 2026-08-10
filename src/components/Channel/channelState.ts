@@ -3,7 +3,7 @@ import type {
   LocalMessage,
   MessageResponse,
   ChannelState as StreamChannelState,
-} from 'stream-chat';
+} from 'chat-shim';
 
 import type { ChannelState } from '../../context/ChannelStateContext';
 

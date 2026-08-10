@@ -9,14 +9,9 @@ import {
   Streami18n,
 } from '../../../i18n';
 
-import type {
-  AppSettingsAPIResponse,
-  Channel,
-  Event,
-  Mute,
-  OwnUserResponse,
-  StreamChat,
-} from 'stream-chat';
+import type { Channel, Event, Mute, OwnUserResponse, StreamChat } from 'chat-shim';
+import { query } from '../../../chatSDKShim';
+import { chatAPI, type AppSettings } from '../../../api/chatAPI';
 
 export type UseChatParams = {
   client: StreamChat;
@@ -47,13 +42,13 @@ export const useChat = ({
   const closeMobileNav = () => setNavOpen(false);
   const openMobileNav = () => setTimeout(() => setNavOpen(true), 100);
 
-  const appSettings = useRef<Promise<AppSettingsAPIResponse> | null>(null);
+  const appSettings = useRef<Promise<AppSettings> | null>(null);
 
   const getAppSettings = () => {
     if (appSettings.current) {
       return appSettings.current;
     }
-    appSettings.current = client.getAppSettings();
+    appSettings.current = chatAPI.getAppSettings();
     return appSettings.current;
   };
 
@@ -62,23 +57,26 @@ export const useChat = ({
 
     const version = process.env.STREAM_CHAT_REACT_VERSION;
 
-    const userAgent = client.getUserAgent();
-    if (!userAgent.includes('stream-chat-react')) {
-      // result looks like: 'stream-chat-react-2.3.2-stream-chat-javascript-client-browser-2.2.2'
-      // the upper-case text between double underscores is replaced with the actual semantic version of the library
-      client.setUserAgent(`stream-chat-react-${version}-${userAgent}`);
-    }
+    chatAPI
+      .listUserAgents()
+      .then(({ user_agent }) => {
+        const userAgent = user_agent ?? '';
+        if (userAgent.includes('stream-chat-react')) return;
+        // result looks like: 'stream-chat-react-2.3.2-stream-chat-javascript-client-browser-2.2.2'
+        // the upper-case text between double underscores is replaced with the actual semantic version of the library
+        client.setUserAgent(`stream-chat-react-${version}-${userAgent}`);
+      });
 
     client.threads.registerSubscriptions();
     client.polls.registerSubscriptions();
     client.reminders.registerSubscriptions();
-    client.reminders.initTimers();
+    void chatAPI.reminders.initTimers({ client });
 
     return () => {
-      client.threads.unregisterSubscriptions();
-      client.polls.unregisterSubscriptions();
-      client.reminders.unregisterSubscriptions();
-      client.reminders.clearTimers();
+      void chatAPI.threads.unregisterSubscriptions({ client });
+      void chatAPI.polls.unregisterSubscriptions({ client });
+      void chatAPI.reminders.unregisterSubscriptions({ client });
+      void chatAPI.reminders.clearTimers({ client });
     };
   }, [client]);
 
@@ -89,8 +87,15 @@ export const useChat = ({
       setMutes(event.me?.mutes || []);
     };
 
-    client.on('notification.mutes_updated', handleEvent);
-    return () => client.off('notification.mutes_updated', handleEvent);
+    const subscription = chatAPI.client.on(
+      client,
+      'notification.mutes_updated',
+      handleEvent,
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientMutes?.length]);
 
@@ -128,7 +133,7 @@ export const useChat = ({
       if (event && event.preventDefault) event.preventDefault();
 
       if (activeChannel && Object.keys(watchers).length) {
-        await activeChannel.query({ watch: true, watchers });
+        await query(activeChannel, watchers);
       }
 
       setChannel(activeChannel);

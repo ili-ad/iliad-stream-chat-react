@@ -10,7 +10,7 @@ import { useAudioController } from './hooks/useAudioController';
 import { useChannelStateContext } from '../../context/ChannelStateContext';
 import { useTranslationContext } from '../../context/TranslationContext';
 
-import type { Attachment } from 'stream-chat';
+import type { Attachment } from 'chat-shim';
 import type { RenderAttachmentProps } from './utils';
 import type { Dimensions } from '../../types/types';
 

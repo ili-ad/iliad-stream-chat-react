@@ -2,7 +2,8 @@ import React from 'react';
 import { FormDialog } from '../../Dialog/FormDialog';
 import { useChatContext, usePollContext, useTranslationContext } from '../../../context';
 import { useStateStore } from '../../../store';
-import type { PollOption, PollState } from 'stream-chat';
+import { castVote } from '../../../chatSDKShim';
+import type { PollOption, PollState } from 'chat-shim';
 
 type PollStateSelectorReturnValue = { options: PollOption[] };
 const pollStateSelector = (nextValue: PollState): PollStateSelectorReturnValue => ({
@@ -50,10 +51,20 @@ export const SuggestPollOptionForm = ({
         },
       }}
       onSubmit={async (value) => {
-        const { poll_option } = await client.createPollOption(poll.id, {
-          text: value.optionText,
+        const createPollOption = (client as {
+          createPollOption?: (id: string, payload: { text: string }) => Promise<any>;
+        }).createPollOption;
+        if (typeof createPollOption !== 'function') return;
+        const created = await createPollOption(poll.id, { text: value.optionText });
+        const pollOption = created?.poll_option ?? created;
+        if (!pollOption?.id) return;
+        return castVote({
+          poll,
+          optionId: String(pollOption.id),
+          messageId,
+          userId: client.user?.id ?? 'me',
+          user: client.user,
         });
-        poll.castVote(poll_option.id, messageId);
       }}
       shouldDisableSubmitButton={(value) => !value.optionText}
       title={t('Suggest an option')}

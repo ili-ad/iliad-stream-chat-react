@@ -4,7 +4,7 @@ import { useChannelActionContext } from '../../../context/ChannelActionContext';
 import { useChatContext } from '../../../context/ChatContext';
 import { useTranslationContext } from '../../../context/TranslationContext';
 
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 import type { ReactEventHandler } from '../types';
 
 export type DeleteMessageNotifications = {

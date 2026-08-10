@@ -1,6 +1,6 @@
 import { useChannelActionContext } from '../../../context/ChannelActionContext';
 
-import type { LocalMessage } from 'stream-chat';
+import type { LocalMessage } from 'chat-shim';
 import type { ReactEventHandler } from '../types';
 
 export const useOpenThreadHandler = (

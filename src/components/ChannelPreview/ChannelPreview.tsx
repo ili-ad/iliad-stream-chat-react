@@ -1,12 +1,13 @@
 import throttle from 'lodash.throttle';
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Channel, Event, LocalMessage } from 'stream-chat';
+import type { Channel, Event, LocalMessage } from 'chat-shim';
 
 import { ChannelPreviewMessenger } from './ChannelPreviewMessenger';
 import { useIsChannelMuted } from './hooks/useIsChannelMuted';
 import { useChannelPreviewInfo } from './hooks/useChannelPreviewInfo';
 import { getLatestMessagePreview as defaultGetLatestMessagePreview } from './utils';
+import { chatAPI } from '../../api/chatAPI';
 import { useChatContext } from '../../context/ChatContext';
 import { useTranslationContext } from '../../context/TranslationContext';
 import { useMessageDeliveryStatus } from './hooks/useMessageDeliveryStatus';
@@ -104,19 +105,24 @@ export const ChannelPreview = (props: ChannelPreviewProps) => {
       if (channel.cid === event.cid) setUnread(0);
     };
 
-    client.on('notification.mark_read', handleEvent);
-    return () => client.off('notification.mark_read', handleEvent);
+    const subscription = chatAPI.client.on(
+      client,
+      'notification.mark_read',
+      handleEvent,
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [channel, client]);
 
   useEffect(() => {
     const handleEvent = (event: Event) => {
       if (channel.cid !== event.cid) return;
       if (event.user?.id !== client.user?.id) return;
-      setUnread(channel.countUnread());
+      setUnread(chatAPI.channel.countUnread({ channel }));
     };
-    channel.on('notification.mark_unread', handleEvent);
     return () => {
-      channel.off('notification.mark_unread', handleEvent);
     };
   }, [channel, client]);
 
@@ -126,7 +132,7 @@ export const ChannelPreview = (props: ChannelPreviewProps) => {
         if (muted) {
           setUnread(0);
         } else {
-          setUnread(channel.countUnread());
+          setUnread(chatAPI.channel.countUnread({ channel }));
         }
       }, 400),
     [channel, muted],
@@ -142,18 +148,7 @@ export const ChannelPreview = (props: ChannelPreviewProps) => {
       refreshUnreadCount();
     };
 
-    channel.on('message.new', handleEvent);
-    channel.on('message.updated', handleEvent);
-    channel.on('message.deleted', handleEvent);
-    channel.on('message.undeleted', handleEvent);
-    channel.on('channel.truncated', handleEvent);
-
     return () => {
-      channel.off('message.new', handleEvent);
-      channel.off('message.updated', handleEvent);
-      channel.off('message.deleted', handleEvent);
-      channel.off('message.undeleted', handleEvent);
-      channel.off('channel.truncated', handleEvent);
     };
   }, [channel, refreshUnreadCount, channelUpdateCount]);
 

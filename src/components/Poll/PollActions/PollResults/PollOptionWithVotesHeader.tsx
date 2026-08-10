@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStateStore } from '../../../../store';
 import { usePollContext, useTranslationContext } from '../../../../context';
-import type { PollOption, PollState } from 'stream-chat';
+import type { PollOption, PollState } from 'chat-shim';
 
 type PollStateSelectorReturnValue = {
   maxVotedOptionIds: string[];

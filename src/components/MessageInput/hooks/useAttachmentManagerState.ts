@@ -1,6 +1,6 @@
 import { useMessageComposer } from './useMessageComposer';
 import { useStateStore } from '../../../store';
-import type { AttachmentManagerState } from 'stream-chat';
+import type { AttachmentManagerState } from 'chat-shim';
 
 const stateSelector = (state: AttachmentManagerState) => ({
   attachments: state.attachments,

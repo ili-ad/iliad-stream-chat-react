@@ -6,12 +6,14 @@ import { RemindMeActionButton } from './RemindMeSubmenu';
 import { useMessageReminder } from '../Message';
 import { useMessageComposer } from '../MessageInput';
 import {
-  useChatContext,
   useComponentContext,
+  useChatContext,
   useMessageContext,
   useTranslationContext,
 } from '../../context';
 import { MESSAGE_ACTIONS } from '../Message/utils';
+import { chatAPI, type CreateReminderInput } from '../../api/chatAPI';
+import { clientRemindersCreateReminder } from '../../chatSDKShim';
 import type { MessageContextValue } from '../../context';
 
 type PropsDrilledToMessageActionsBox =
@@ -48,12 +50,12 @@ const UnMemoizedMessageActionsBox = (props: MessageActionsBoxProps) => {
     ...restDivProps
   } = props;
 
-  const { client } = useChatContext();
   const { CustomMessageActionsList = DefaultCustomMessageActionsList } =
     useComponentContext('MessageActionsBox');
   const { customMessageActions, message, threadList } =
     useMessageContext('MessageActionsBox');
   const { t } = useTranslationContext('MessageActionsBox');
+  const { client, channel } = useChatContext('MessageActionsBox');
   const messageComposer = useMessageComposer();
   const reminder = useMessageReminder(message.id);
 
@@ -169,11 +171,34 @@ const UnMemoizedMessageActionsBox = (props: MessageActionsBoxProps) => {
           <button
             aria-selected='false'
             className={buttonClassName}
-            onClick={() =>
-              reminder
-                ? client.reminders.deleteReminder(reminder.id)
-                : client.reminders.createReminder({ messageId: message.id })
-            }
+            onClick={async () => {
+              const cid = channel?.cid ?? (message.cid as string | undefined);
+              if (!cid) return;
+              if (reminder) {
+                await chatAPI.reminders.deleteReminder({
+                  cid,
+                  reminderId: reminder.id,
+                  client,
+                });
+                return;
+              }
+              const remindAt = new Date().toISOString();
+              const rawMessageId =
+                typeof message.id === 'number'
+                  ? message.id
+                  : typeof message.id === 'string'
+                  ? Number.parseInt(message.id, 10)
+                  : undefined;
+              const params: CreateReminderInput = {
+                cid,
+                remind_at: remindAt,
+                note: message.text || undefined,
+              };
+              if (typeof rawMessageId === 'number' && !Number.isNaN(rawMessageId)) {
+                params.message_id = rawMessageId;
+              }
+              await clientRemindersCreateReminder(client, params);
+            }}
             role='option'
           >
             {reminder ? t('Remove reminder') : t('Save for later')}

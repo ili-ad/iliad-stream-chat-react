@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import uniqBy from 'lodash.uniqby';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import uniqBy from "lodash.uniqby";
 
-import { MAX_QUERY_CHANNELS_LIMIT } from '../utils';
+import { MAX_QUERY_CHANNELS_LIMIT } from "../utils";
 
 import type {
   APIErrorResponse,
@@ -11,19 +11,20 @@ import type {
   ChannelSort,
   ErrorFromResponse,
   StreamChat,
-} from 'stream-chat';
+} from "chat-shim";
 
-import { useChatContext } from '../../../context/ChatContext';
+import { useChatContext } from "../../../context/ChatContext";
+import { chatAPI } from "../../../api/chatAPI";
 
-import type { ChannelsQueryState } from '../../Chat/hooks/useChannelsQueryState';
-import { DEFAULT_INITIAL_CHANNEL_PAGE_SIZE } from '../../../constants/limits';
+import type { ChannelsQueryState } from "../../Chat/hooks/useChannelsQueryState";
+import { DEFAULT_INITIAL_CHANNEL_PAGE_SIZE } from "../../../constants/limits";
 
 const RECOVER_LOADED_CHANNELS_THROTTLE_INTERVAL_IN_MS = 5000;
 const MIN_RECOVER_LOADED_CHANNELS_THROTTLE_INTERVAL_IN_MS = 2000;
 
 type AllowedQueryType = Extract<
-  ChannelsQueryState['queryInProgress'],
-  'reload' | 'load-more'
+  ChannelsQueryState["queryInProgress"],
+  "reload" | "load-more"
 >;
 
 export type CustomQueryChannelParams = {
@@ -33,7 +34,9 @@ export type CustomQueryChannelParams = {
   setHasNextPage: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export type CustomQueryChannelsFn = (params: CustomQueryChannelParams) => Promise<void>;
+export type CustomQueryChannelsFn = (
+  params: CustomQueryChannelParams,
+) => Promise<void>;
 
 export const usePaginatedChannels = (
   client: StreamChat,
@@ -49,24 +52,26 @@ export const usePaginatedChannels = (
 ) => {
   const {
     channelsQueryState: { error, setError, setQueryInProgress },
-  } = useChatContext('usePaginatedChannels');
+  } = useChatContext("usePaginatedChannels");
   const [channels, setChannels] = useState<Array<Channel>>([]);
   const [hasNextPage, setHasNextPage] = useState(true);
   const lastRecoveryTimestamp = useRef<number | undefined>(undefined);
 
   const recoveryThrottleInterval =
-    recoveryThrottleIntervalMs < MIN_RECOVER_LOADED_CHANNELS_THROTTLE_INTERVAL_IN_MS
+    recoveryThrottleIntervalMs <
+    MIN_RECOVER_LOADED_CHANNELS_THROTTLE_INTERVAL_IN_MS
       ? MIN_RECOVER_LOADED_CHANNELS_THROTTLE_INTERVAL_IN_MS
-      : (recoveryThrottleIntervalMs ?? RECOVER_LOADED_CHANNELS_THROTTLE_INTERVAL_IN_MS);
+      : (recoveryThrottleIntervalMs ??
+        RECOVER_LOADED_CHANNELS_THROTTLE_INTERVAL_IN_MS);
   // memoize props
   const filterString = useMemo(() => JSON.stringify(filters), [filters]);
   const sortString = useMemo(() => JSON.stringify(sort), [sort]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const queryChannels = async (queryType = 'load-more') => {
+  const queryChannels = async (queryType = "load-more") => {
     setError(null);
 
-    if (queryType === 'reload') {
+    if (queryType === "reload") {
       setChannels([]);
     }
     setQueryInProgress(queryType as AllowedQueryType);
@@ -80,25 +85,27 @@ export const usePaginatedChannels = (
           setHasNextPage,
         });
       } else {
-        const offset = queryType === 'reload' ? 0 : channels.length;
+        const offset = queryType === "reload" ? 0 : channels.length;
 
         const newOptions = {
           limit: options?.limit ?? MAX_QUERY_CHANNELS_LIMIT,
-          message_limit: options?.message_limit ?? DEFAULT_INITIAL_CHANNEL_PAGE_SIZE,
+          message_limit:
+            options?.message_limit ?? DEFAULT_INITIAL_CHANNEL_PAGE_SIZE,
           offset,
           ...options,
         };
 
-        const channelQueryResponse = await client.queryChannels(
+        const channelQueryResponse = await chatAPI.clientQueryChannels({
+          client,
           filters,
-          sort || {},
-          newOptions,
-        );
+          sort,
+          options: newOptions,
+        });
 
         const newChannels =
-          queryType === 'reload'
+          queryType === "reload"
             ? channelQueryResponse
-            : uniqBy([...channels, ...channelQueryResponse], 'cid');
+            : uniqBy([...channels, ...channelQueryResponse], "cid");
 
         setChannels(newChannels);
         setHasNextPage(channelQueryResponse.length >= newOptions.limit);
@@ -132,7 +139,7 @@ export const usePaginatedChannels = (
     }
 
     lastRecoveryTimestamp.current = now;
-    queryChannels('reload');
+    queryChannels("reload");
   }, [error, queryChannels, recoveryThrottleInterval]);
 
   const loadNextPage = () => {
@@ -141,7 +148,7 @@ export const usePaginatedChannels = (
 
   useEffect(() => {
     if (client.recoverStateOnReconnect) return;
-    const { unsubscribe } = client.on('connection.recovered', throttleRecover);
+    const { unsubscribe } = { unsubscribe: () => {} };
 
     return () => {
       unsubscribe();
@@ -149,7 +156,7 @@ export const usePaginatedChannels = (
   }, [client, throttleRecover]);
 
   useEffect(() => {
-    queryChannels('reload');
+    queryChannels("reload");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterString, sortString]);
 

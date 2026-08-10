@@ -30,6 +30,7 @@ import { useComponentContext } from '../../context/ComponentContext';
 import { useAttachmentManagerState } from './hooks/useAttachmentManagerState';
 import { useMessageContext } from '../../context';
 import { WithDragAndDropUpload } from './WithDragAndDropUpload';
+import { chatAPI } from '../../api/chatAPI';
 
 export const MessageInputFlat = () => {
   const { message } = useMessageContext();
@@ -60,7 +61,10 @@ export const MessageInputFlat = () => {
   const { channel } = useChatContext('MessageInputFlat');
   const { aiState } = useAIState(channel);
 
-  const stopGenerating = useCallback(() => channel?.stopAIResponse(), [channel]);
+  const stopGenerating = useCallback(() => {
+    if (!channel?.cid) return;
+    void chatAPI.stopAIResponse(channel.cid);
+  }, [channel?.cid]);
 
   const [
     showRecordingPermissionDeniedNotification,
@@ -92,7 +96,11 @@ export const MessageInputFlat = () => {
     !!StopAIGenerationButton;
 
   return (
-    <WithDragAndDropUpload className='str-chat__message-input' component='div'>
+    <WithDragAndDropUpload
+      className='str-chat__message-input'
+      component='div'
+      data-testid='composer-input'
+    >
       {recordingEnabled &&
         recordingController.permissionState === 'denied' &&
         showRecordingPermissionDeniedNotification && (

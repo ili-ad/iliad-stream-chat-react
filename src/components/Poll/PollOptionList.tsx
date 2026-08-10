@@ -3,7 +3,7 @@ import React from 'react';
 import { PollOptionSelector as DefaultPollOptionSelector } from './PollOptionSelector';
 import { useStateStore } from '../../store';
 import { useComponentContext, usePollContext } from '../../context';
-import type { PollOption, PollState } from 'stream-chat';
+import type { PollOption, PollState } from 'chat-shim';
 
 type PollStateSelectorReturnValue = { options: PollOption[] };
 

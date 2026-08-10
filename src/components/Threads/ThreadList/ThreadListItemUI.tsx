@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import clsx from 'clsx';
 
-import type { LocalMessage, ThreadState } from 'stream-chat';
+import type { LocalMessage, ThreadState } from 'chat-shim';
 import type { ComponentPropsWithoutRef } from 'react';
 
 import { Timestamp } from '../../Message/Timestamp';

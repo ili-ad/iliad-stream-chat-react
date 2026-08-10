@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useChatContext } from '../../../context';
 import { useStateStore } from '../../../store';
-import type { ReminderManagerState } from 'stream-chat';
+import type { ReminderManagerState } from 'chat-shim';
 
 export const useMessageReminder = (messageId: string) => {
   const { client } = useChatContext();

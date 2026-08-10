@@ -1,4 +1,4 @@
-import type { Channel, ChannelMemberResponse, EventTypes } from 'stream-chat';
+import type { Channel, ChannelMemberResponse, EventTypes } from 'chat-shim';
 import { useSelectedChannelState } from './useSelectedChannelState';
 
 const selector = (c: Channel) => c.state.membership;

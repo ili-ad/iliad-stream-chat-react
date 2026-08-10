@@ -15,7 +15,7 @@ import type {
   SearchSourceState,
   TextComposerState,
   TextComposerSuggestion,
-} from 'stream-chat';
+} from 'chat-shim';
 import type { UserItemProps } from './UserItem';
 
 type SuggestionTrigger = '/' | ':' | '@' | string;
@@ -82,7 +82,9 @@ export const SuggestionList = ({
     if (!closeOnClickOutside || !suggestions || !container) return;
     const handleClick = (event: MouseEvent) => {
       if (container.contains(event.target as Node)) return;
-      textComposer.closeSuggestions();
+      if (typeof textComposer?.closeSuggestions === 'function') {
+        textComposer.closeSuggestions();
+      }
     };
     document.addEventListener('click', handleClick);
     return () => {

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { isLocalMessage } from '../utils';
 import { getReadStates } from '../utils';
 
-import type { LocalMessage, UserResponse } from 'stream-chat';
+import type { LocalMessage, UserResponse } from 'chat-shim';
 import type { RenderedMessage } from '../utils';
 
 type UseLastReadDataParams = {

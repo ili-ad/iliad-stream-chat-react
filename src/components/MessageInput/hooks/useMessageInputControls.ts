@@ -4,7 +4,7 @@ import { useSubmitHandler } from './useSubmitHandler';
 import { usePasteHandler } from './usePasteHandler';
 import { useMediaRecorder } from '../../MediaRecorder/hooks/useMediaRecorder';
 import type { RecordingController } from '../../MediaRecorder/hooks/useMediaRecorder';
-import type { UpdatedMessage } from 'stream-chat';
+import type { UpdatedMessage } from 'chat-shim';
 import type { MessageInputProps } from '../MessageInput';
 
 export type MessageInputHookProps = {

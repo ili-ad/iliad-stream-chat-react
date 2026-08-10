@@ -3,7 +3,7 @@ import { MediaRecorderController } from '../classes';
 import { useTranslationContext } from '../../../context';
 import { useMessageComposer } from '../../MessageInput';
 
-import type { LocalVoiceRecordingAttachment } from 'stream-chat';
+import type { LocalVoiceRecordingAttachment } from 'chat-shim';
 import type { CustomAudioRecordingConfig, MediaRecordingState } from '../classes';
 import type { MessageInputContextValue } from '../../../context';
 

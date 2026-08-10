@@ -7,8 +7,11 @@ import { useChatContext } from '../../context';
 import { useStateStore } from '../../store';
 
 import type { PropsWithChildren } from 'react';
-import type { Thread, ThreadManagerState } from 'stream-chat';
+import type { Thread, ThreadManagerState } from 'chat-shim';
 import clsx from 'clsx';
+
+import { noopStore } from 'chat-shim/noopStore';
+import { clientThreadsState } from '../../chatSDKShim';
 
 type ChatView = 'channels' | 'threads';
 
@@ -131,7 +134,10 @@ const selector = ({ unreadThreadCount }: ThreadManagerState) => ({
 
 const ChatViewSelector = () => {
   const { client } = useChatContext();
-  const { unreadThreadCount } = useStateStore(client.threads.state, selector);
+  const { unreadThreadCount } = useStateStore(
+    clientThreadsState(client),
+    selector,
+  );
 
   const { activeChatView, setActiveChatView } = useContext(ChatViewContext);
 

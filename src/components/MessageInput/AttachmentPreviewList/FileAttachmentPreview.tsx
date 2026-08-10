@@ -7,7 +7,7 @@ import type {
   LocalAudioAttachment,
   LocalFileAttachment,
   LocalVideoAttachment,
-} from 'stream-chat';
+} from 'chat-shim';
 import type { UploadAttachmentPreviewProps } from './types';
 
 export type FileAttachmentPreviewProps<CustomLocalMetadata = unknown> =

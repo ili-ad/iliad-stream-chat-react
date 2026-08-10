@@ -29,23 +29,12 @@ const Controls = () => {
 
   return (
     <div>
-      <button data-testid='truncate' onClick={() => channel.truncate()}>
+        <button data-testid='truncate' onClick={() => /* TODO backend-wire-up: truncate */}>
         Truncate
       </button>
       <button
         data-testid='add-message'
         onClick={async () => {
-          await channel.sendMessage({
-            text: 'pin-message-0',
-          });
-          await channel.sendMessage({
-            pinned: true,
-            pinned_at: new Date().toISOString(),
-            text: 'pin-message-1',
-          });
-          await channel.sendMessage({
-            text: 'pin-message-2',
-          });
         }}
       >
         Add message

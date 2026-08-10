@@ -4,7 +4,7 @@ import { CUSTOM_MESSAGE_TYPE } from '../../constants/messageTypes';
 import { isMessageEdited } from '../Message/utils';
 import { isDate } from '../../i18n';
 
-import type { LocalMessage, MessageLabel, UserResponse } from 'stream-chat';
+import type { LocalMessage, MessageLabel, UserResponse } from 'chat-shim';
 
 type IntroMessage = {
   customType: typeof CUSTOM_MESSAGE_TYPE.intro;

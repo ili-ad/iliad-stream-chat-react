@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import type { PollComposerState } from 'stream-chat';
-import { VotingVisibility } from 'stream-chat';
+import type { PollComposerState } from 'chat-shim';
+import { VotingVisibility } from 'chat-shim';
 import { MultipleAnswersField } from './MultipleAnswersField';
 import { NameField } from './NameField';
 import { OptionFieldSet } from './OptionFieldSet';

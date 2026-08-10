@@ -6,7 +6,7 @@ import { PollOptionList } from './PollOptionList';
 import { MAX_OPTIONS_DISPLAYED } from './constants';
 import { useComponentContext, usePollContext } from '../../context';
 import { useStateStore } from '../../store';
-import type { PollState } from 'stream-chat';
+import type { PollState } from 'chat-shim';
 
 type PollStateSelectorPollContentReturnValue = { is_closed: boolean | undefined };
 const pollStateSelectorPollContent = (
